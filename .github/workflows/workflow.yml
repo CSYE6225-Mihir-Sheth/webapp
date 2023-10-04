@@ -16,7 +16,7 @@ jobs:
           MYSQL_DATABASE: ${{ secrets.DATABASE }}
           MYSQL_ROOT_HOST: ${{ secrets.HOST }}
         ports:
-          - 3306:3306
+          - 3000:3000
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
@@ -28,25 +28,15 @@ jobs:
         with:
           node-version: 20
 
-      # - name: create and configure
-      #   run: 
-      #     touch .env
-      #     echo port=${{ secrets.PORT}} >> .env
-      #     echo host=${{ secrets.HOST}} >> .env
-      #     echo dialect=${{ secrets.DIALECT }} >> .env
-      #     echo user=${{ secrets.ROOT }} >> .env
-      #     echo password=${{ secrets.PD }} >> .env
-      #     echo database${{ secrets.DATABASE }} >> .env
-
       - name: create and configure
-        run: |
+        run: 
           touch .env
-          echo port=8080 >> .env
-          echo host=localhost >> .env
-          echo dialect=mysql >> .env
-          echo user=root >> .env
-          echo password=root123 >> .env
-          echo database=cloud_db >> .env
+          echo port=${{ secrets.PORT}} >> .env
+          echo host=${{ secrets.HOST}} >> .env
+          echo dialect=${{ secrets.DIALECT }} >> .env
+          echo user=${{ secrets.ROOT }} >> .env
+          echo password=${{ secrets.PD }} >> .env
+          echo database${{ secrets.DATABASE }} >> .env
 
 
       - name: Install dependencies
