@@ -14,7 +14,7 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: ${{ secrets.PD }}
           MYSQL_DATABASE: ${{ secrets.DATABASE }}
-          MYSQL_ROOT_HOST: ${{ secrets.ROOT_HOST }}
+          MYSQL_ROOT_HOST: ${{ secrets.HOST }}
           
 
           
@@ -30,7 +30,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 18
+          node-version: 20
 
       - name: create and configure
         run: 
