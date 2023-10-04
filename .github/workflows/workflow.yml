@@ -16,7 +16,7 @@ jobs:
           MYSQL_DATABASE: cloud_db
           MYSQL_ROOT_HOST: "%"
         ports:
-          - 3306:300
+          - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
@@ -31,7 +31,7 @@ jobs:
       - name: create and configure
         run: 
           touch .env
-          echo port=3306 >> .env
+          echo port=8080 >> .env
           echo host=localhost >> .env
           echo dialect=mysql >> .env
           echo user=root >> .env
