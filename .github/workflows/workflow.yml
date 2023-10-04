@@ -1,4 +1,4 @@
-name: PostgreSQL Integration Test
+name: MySQL Integration Test
 
 on:
   pull_request:
@@ -9,19 +9,15 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      postgres:
-        image: postgres:latest
+      mysql:
+        image: mysql:latest
         env:
-          POSTGRES_USER: "postgres"
-          POSTGRES_PASSWORD: "Pragna@29111999"
-          POSTGRES_DB: "CLOUD_DB"
+          MYSQL_ROOT_PASSWORD: "root123"
+          MYSQL_DATABASE: "cloud_db"
+          MYSQL_ROOT_HOST: "%"
         ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s 
-          --health-retries 3
+          - 3000:3000
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
       - name: Checkout code
@@ -30,25 +26,10 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 20.7.0
-      - name: create and configure
-        run: |
-          touch .env
-          echo port=8080 >> .env
-          echo host=localhost >> .env
-          echo dialect=postgres >> .env
-          echo user=postgres >> .env
-          echo password=Pragna@291199 >> .env
-          echo database=CLOUD_DB >> .env
+          node-version: 18
 
       - name: Install dependencies
         run: npm install
-
-      # - name: Wait for PostgreSQL to become ready
-      #   run: |
-      #     until PGPASSWORD=$POSTGRES_PASSWORD psql -h localhost -U $POSTGRES_USER -d $POSTGRES_DB -c '\l'; do
-      #       sleep 10
-      #     done
 
       - name: Run tests
         run: npm test
