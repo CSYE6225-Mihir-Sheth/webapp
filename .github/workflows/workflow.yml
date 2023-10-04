@@ -10,7 +10,7 @@ jobs:
 
     services:
       mysql:
-        image: mysql:latest
+        image: mysql:8.0.28
         env:
           MYSQL_ROOT_PASSWORD: "root123"
           MYSQL_DATABASE: "cloud_db"
@@ -28,15 +28,15 @@ jobs:
         with:
           node-version: 18
 
-      # - name: create and configure
-      #   run: 
-      #     touch .env
-      #     echo port=8080 >> .env
-      #     echo host=127.0.0.1 >> .env
-      #     echo dialect=mysql >> .env
-      #     echo user=root >> .env
-      #     echo password=root123 >> .env
-      #     echo database=cloud_db >> .env
+      - name: create and configure
+        run: 
+          touch .env
+          echo port=8080 >> .env
+          echo host=127.0.0.1 >> .env
+          echo dialect=mysql >> .env
+          echo user=root >> .env
+          echo password=root123 >> .env
+          echo database=cloud_db >> .env
 
 
       - name: Install dependencies
