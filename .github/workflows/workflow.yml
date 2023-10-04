@@ -44,11 +44,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Wait for PostgreSQL to become ready
-        run: |
-          until PGPASSWORD=$POSTGRES_PASSWORD psql -h localhost -U $POSTGRES_USER -d $POSTGRES_DB -c '\l'; do
-            sleep 10
-          done
+      # - name: Wait for PostgreSQL to become ready
+      #   run: |
+      #     until PGPASSWORD=$POSTGRES_PASSWORD psql -h localhost -U $POSTGRES_USER -d $POSTGRES_DB -c '\l'; do
+      #       sleep 10
+      #     done
 
       - name: Run tests
         run: npm test
