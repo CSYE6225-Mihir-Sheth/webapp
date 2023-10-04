@@ -31,6 +31,15 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 20.7.0
+      - name: create and configure
+        run: |
+          touch .env
+          echo port=8080 >> .env
+          echo host=localhost >> .env
+          echo dialect=mysql >> .env
+          echo user=root >> .env
+          echo password=Moin@1234 >> .env
+          echo database=sys >> .env
 
       - name: Install dependencies
         run: npm install
