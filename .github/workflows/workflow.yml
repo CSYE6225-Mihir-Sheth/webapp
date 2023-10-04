@@ -1,89 +1,45 @@
-name: CI for Application
-
- 
+name: PostgreSQL Integration Test
 
 on:
-
-  workflow_dispatch:
-
   pull_request:
-
-    branches: 
-      - main 
-
- 
+    branches: [main]
 
 jobs:
-
-  build-and-test:
-
+  connect-remote:
     runs-on: ubuntu-latest
 
- 
-
-    strategy:
-
-      matrix:
-
-        node-version: [v20.7.0]
-
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
- 
-
     services:
-
       postgres:
-
         image: postgres:latest
-
         env:
-
-          POSTGRES_USER: postgres
-
-          POSTGRES_PASSWORD: Pragna@29111999
-
-          POSTGRES_DB: CLOUD_DB
-
+          POSTGRES_USER: "%"
+          POSTGRES_PASSWORD: "Pragna@29111999"
+          POSTGRES_DB: "CLOUD_DB"
         ports:
-
           - 5432:5432
-
-        options: -e POSTGRES_PASSWORD=password -d
-
- 
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s 
+          --health-retries 3
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 20.7.0
 
- 
+      - name: Install dependencies
+        run: npm install
 
-    - name: Use Node.js ${{ 16.x, 18.x, 20.x }}
+      - name: Wait for PostgreSQL to become ready
+        run: |
+          until PGPASSWORD=$POSTGRES_PASSWORD psql -h localhost -U $POSTGRES_USER -d $POSTGRES_DB -c '\l'; do
+            sleep 10
+          done
 
-      uses: actions/setup-node@v3
-
-      with:
-
-        node-version: ${{ matrix.node-version }}
-
-        cache: 'npm'
-
- 
-
-    - run: npm ci
-    - run: npm install 
- 
-
-    - run: npm run test
-
-      env:
-
-        POSTGRES_HOST: localhost
-
-        POSTGRES_USER: postgres
-
-        POSTGRES_PASSWORD: Pragna@29111999
-
-        POSTGRES_DB: CLOUD_DB
-
+      - name: Run tests
+        run: npm test
