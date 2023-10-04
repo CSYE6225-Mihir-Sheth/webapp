@@ -1,5 +1,5 @@
 
-import app from '../applicaiton/application.js';
+import app from '../server.js';
 import request from 'supertest';
 import { expect } from 'chai';
 
