@@ -1,5 +1,6 @@
 name: MySQL Integration Test
 
+
 on:
   pull_request:
     branches: [main]
@@ -42,5 +43,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Wait for MySQL to become available
+        run: sleep 15
+        
       - name: Run tests
         run: npm test
