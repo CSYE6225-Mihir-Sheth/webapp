@@ -9,7 +9,7 @@ export default {
     user: process.env.user,
     password: process.env.password,
     database: process.env.database,
-    dialect: 'mysql',
+    dialect: process.env.dialect,
     port: process.env.port
   },
 };

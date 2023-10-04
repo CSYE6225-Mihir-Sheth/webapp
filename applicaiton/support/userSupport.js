@@ -10,9 +10,6 @@ const currentDate = new Date();
 const accountCreatedString = currentDate.toISOString();
 const accountUpdatedString = currentDate.toISOString();
 
-const User = userModel(db.sequelize);
-// const Assignment = assignmentModel(sequelize);
-
 const initializeDatabase=async () => {
     try {
         // Sync the database to create tables if they don't exist
