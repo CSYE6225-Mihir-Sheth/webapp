@@ -1,0 +1,89 @@
+name: CI for Application
+
+ 
+
+on:
+
+  workflow_dispatch:
+
+  pull_request:
+
+    branches: 
+      - main 
+
+ 
+
+jobs:
+
+  build-and-test:
+
+    runs-on: ubuntu-latest
+
+ 
+
+    strategy:
+
+      matrix:
+
+        node-version: [v20.7.0]
+
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+ 
+
+    services:
+
+      postgres:
+
+        image: postgres:latest
+
+        env:
+
+          POSTGRES_USER: postgres
+
+          POSTGRES_PASSWORD: Pragna@29111999
+
+          POSTGRES_DB: CLOUD_DB
+
+        ports:
+
+          - 5432:5432
+
+        options: -e POSTGRES_PASSWORD=password -d
+
+ 
+
+    steps:
+
+    - uses: actions/checkout@v3
+
+ 
+
+    - name: Use Node.js ${{ 16.x, 18.x, 20.x }}
+
+      uses: actions/setup-node@v3
+
+      with:
+
+        node-version: ${{ matrix.node-version }}
+
+        cache: 'npm'
+
+ 
+
+    - run: npm ci
+    - run: npm install 
+ 
+
+    - run: npm run test
+
+      env:
+
+        POSTGRES_HOST: localhost
+
+        POSTGRES_USER: postgres
+
+        POSTGRES_PASSWORD: Pragna@29111999
+
+        POSTGRES_DB: CLOUD_DB
+
