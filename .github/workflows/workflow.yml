@@ -33,7 +33,7 @@ jobs:
         run: 
           touch .env
           echo port=8080 >> .env
-          echo host=mysql >> .env
+          echo host=localhost >> .env
           echo dialect=mysql >> .env
           echo user=root >> .env
           echo password=root123 >> .env
@@ -45,6 +45,8 @@ jobs:
 
       - name: Wait for MySQL to become available
         run: sleep 15
-        
+
       - name: Run tests
         run: npm test
+
+      
