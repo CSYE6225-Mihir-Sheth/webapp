@@ -32,7 +32,7 @@ jobs:
         run: 
           touch .env
           echo port=8080 >> .env
-          echo host=127.0.0.1 >> .env
+          echo host=mysql >> .env
           echo dialect=mysql >> .env
           echo user=root >> .env
           echo password=root123 >> .env
