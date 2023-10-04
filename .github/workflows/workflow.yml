@@ -36,10 +36,10 @@ jobs:
           touch .env
           echo port=8080 >> .env
           echo host=localhost >> .env
-          echo dialect=mysql >> .env
-          echo user=root >> .env
-          echo password=Moin@1234 >> .env
-          echo database=sys >> .env
+          echo dialect=postgres >> .env
+          echo user=postgres >> .env
+          echo password=Pragna@291199 >> .env
+          echo database=CLOUD_DB >> .env
 
       - name: Install dependencies
         run: npm install
