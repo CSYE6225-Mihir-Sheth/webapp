@@ -12,8 +12,8 @@ jobs:
       mysql:
         image: mysql:latest
         env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.PD }}
-          MYSQL_DATABASE: ${{ secrets.DATABASE }}
+          MYSQL_ROOT_PASSWORD: root123
+          MYSQL_DATABASE: cloud_db
           MYSQL_ROOT_HOST: "%"
         ports:
           - 3306:3306
@@ -31,12 +31,12 @@ jobs:
       - name: create and configure
         run: 
           touch .env
-          echo port=${{ secrets.PORT}} >> .env
-          echo host=${{ secrets.HOST}} >> .env
-          echo dialect=${{ secrets.DIALECT }} >> .env
-          echo user=${{ secrets.ROOT }} >> .env
-          echo password=${{ secrets.PD }} >> .env
-          echo database${{ secrets.DATABASE }} >> .env
+          echo port=3306 >> .env
+          echo host=localhost >> .env
+          echo dialect=mysql >> .env
+          echo user=root >> .env
+          echo password=root123 >> .env
+          echo database=cloud_db >> .env
 
 
       - name: Install dependencies
