@@ -12,7 +12,7 @@ jobs:
       postgres:
         image: postgres:latest
         env:
-          POSTGRES_USER: "%"
+          POSTGRES_USER: "postgres"
           POSTGRES_PASSWORD: "Pragna@29111999"
           POSTGRES_DB: "CLOUD_DB"
         ports:

@@ -51,7 +51,6 @@ const userModel = (sequelize) => {
             user.password = bcrypt.hashSync(user.password, 12);
         }
     });
-
     return User;
 }
 
