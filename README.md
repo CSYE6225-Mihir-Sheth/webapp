@@ -7,7 +7,6 @@
   - [Introduction](#introduction)
   - [User Requirements](#user-requirements)
   - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
   - [Available Scripts](#available-scripts)
   - [API Endpoints](#api-endpoints)
   - [HTTP Response Messages](#http-response-messages)
@@ -34,8 +33,6 @@ WebApp is built on **Node.js**, a server-side JavaScript runtime environment tha
 - MySQL Database
 - Node.js
 - Digital Ocean (Hosting)
-
-## Installation
 
 ## Available Scripts
 - **Development Server:** `npm start`
