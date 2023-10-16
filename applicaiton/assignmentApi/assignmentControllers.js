@@ -217,10 +217,10 @@ export const get = async (request, response) => {
         const assignments = await getAllAssignments(authenticated);
 
         if (assignments.length === 0) {
-            //     // Handle the case when no assignments are found for the user
-            // return response.status(404).send('');
-       // } else {
-                // Send the assignments as a JSON response
+                // Handle the case when no assignments are found for the user
+            return response.status(404).send('');
+       } else {
+                //Send the assignments as a JSON response
             return response.status(200).send(assignments);
             }
     }   catch (error) {
