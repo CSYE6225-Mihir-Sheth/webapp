@@ -71,4 +71,5 @@ build {
   provisioner "shell" {
     script = "set.sh"
   }
+  
 }

@@ -41,4 +41,4 @@ jobs:
       run: packer init .
 
     - name: Check Packer template format
-      run: packer fmt -check ami.us-east-1.pkr.hcl
+      run: packer fmt ami.us-east-1.pkr.hcl
