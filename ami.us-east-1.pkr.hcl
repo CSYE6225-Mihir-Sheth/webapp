@@ -61,8 +61,6 @@ build {
     destination = "/home/admin/webapp.zip"
 }
 
-
-
   provisioner "file" {
     source      = "applicaiton/database/users.csv"
     destination = "/home/admin/users.csv"
