@@ -1,6 +1,7 @@
 name: Packer Format
 
 on:
+  push:
   pull_request:
     branches: [testing]
 
