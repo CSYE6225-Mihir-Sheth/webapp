@@ -54,17 +54,16 @@ source "amazon-ebs" "my-ami" {
 build {
   sources = ["source.amazon-ebs.my-ami"]
 
-  provisioner "shell" {
-    environment_vars = [
-      "DEBIAN_FRONTEND=noninteractive",
-      "CHECKPOINT_DISABLE=1"
-    ]
-    inline = [
-
-      "sudo apt-get update",
-      "sudo apt-get upgrade -y",
-      "sudo apt-get install nginx -y",
-      "sudo apt-get clean",
-    ]
+  provisioner "file" {
+    source      = "webapp.zip"
+    destination = "/home/admin/webapp.zip"
+  }
+  provisioner "file" {
+    source      = "database/users.csv"
+    destination = "/home/admin/webapp.zip"
+  }
+  provisioner "source" {
+    source      = "setup.sh"
+    destination = "10s"
   }
 }
