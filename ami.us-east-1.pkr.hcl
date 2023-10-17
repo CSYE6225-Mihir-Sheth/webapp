@@ -57,9 +57,10 @@ build {
   sources = ["source.amazon-ebs.my-ami"]
 
   provisioner "file" {
-    source      = "/absolute/path/to/webapp.zip"
+    source      = "/home/runner/work/webapp/webapp/webapp.zip"
     destination = "/home/admin/webapp.zip"
-  }
+}
+
 
   provisioner "file" {
     source      = "webapp/database/users.csv"
