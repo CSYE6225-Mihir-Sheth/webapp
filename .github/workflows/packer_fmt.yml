@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
     - name: Checkout code
       uses: actions/checkout@v2
 
@@ -42,3 +43,4 @@ jobs:
 
     - name: Check Packer template format
       run: packer fmt -check ami.us-east-1.pkr.hcl
+      

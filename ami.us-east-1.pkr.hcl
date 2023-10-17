@@ -2,7 +2,7 @@ packer {
   required_plugins {
     amazon = {
       version = ">= 1.0.0"
-      source  = "github.com/hashicorp/amazon"
+      source  = "github.com/hashicorp/packer-plugin-amazon"
     }
   }
 }
@@ -53,13 +53,12 @@ source "amazon-ebs" "my-ami" {
 }
 
 build {
-
   sources = ["source.amazon-ebs.my-ami"]
 
   provisioner "file" {
     source      = "webapp.zip"
     destination = "/home/admin/webapp.zip"
-}
+  }
 
   provisioner "file" {
     source      = "applicaiton/database/users.csv"
@@ -68,6 +67,8 @@ build {
 
   provisioner "shell" {
     script = "set.sh"
-  }
+    pause_before = "10s"
+  } 
   
 }
+
