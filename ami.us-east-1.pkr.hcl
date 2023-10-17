@@ -67,7 +67,7 @@ build {
 
   provisioner "shell" {
     script = "set.sh"
-    pause_before = "10s"
+    pause_before = "15s"
   } 
 
 }
