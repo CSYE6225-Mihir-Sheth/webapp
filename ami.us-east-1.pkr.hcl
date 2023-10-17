@@ -60,7 +60,7 @@ build {
   }
   provisioner "file" {
     source      = "database/users.csv"
-    destination = "/home/admin/webapp.zip"
+    destination = "/home/admin/users.csv"
   }
   provisioner "shell" {
     source      = "setup.sh"
