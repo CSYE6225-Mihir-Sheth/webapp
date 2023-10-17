@@ -1,6 +1,7 @@
 name: MySQL Integration Test
 
 on:
+  push:
   pull_request:
     branches: [testing]
 
