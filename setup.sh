@@ -15,5 +15,5 @@ sudo mv /home/admin/webapp.zip /home/admin/opt/webapp.zip
 sudo mv /home/admin/users.csv /home/admin/opt/users.csv
 cd opt
 sudo unzip -o webapp.zip
-cd webapp
+#cd webapp
 sudo npm install
