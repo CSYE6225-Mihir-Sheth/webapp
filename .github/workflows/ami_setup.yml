@@ -41,4 +41,4 @@ jobs:
       run: zip -r webapp.zip .
 
     - name: Build ami with packer
-      run: packer build ami-packer.hcl
+      run: packer build ami.us-east-1.pkr.hcl

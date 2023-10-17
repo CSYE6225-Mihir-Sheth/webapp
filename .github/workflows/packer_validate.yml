@@ -1,7 +1,6 @@
 name: Validate Packer Configuration
 
 on:
-  push:
   pull_request:
     branches: [testing]
 
@@ -42,4 +41,4 @@ jobs:
       run: packer init .
 
     - name: Validate Packer template
-      run: packer validate ami-packer.hcl
+      run: packer validate ami.us-east-1.pkr.hcl

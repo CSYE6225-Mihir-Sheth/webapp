@@ -1,7 +1,6 @@
 name: Packer Format
 
 on:
-  push:
   pull_request:
     branches: [testing]
 
@@ -42,4 +41,4 @@ jobs:
       run: packer init .
 
     - name: Check Packer template format
-      run: packer fmt -check ami-packer.hcl
+      run: packer fmt -check ami.us-east-1.pkr.hcl
