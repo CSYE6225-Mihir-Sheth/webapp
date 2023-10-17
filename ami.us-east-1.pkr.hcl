@@ -60,8 +60,6 @@ build {
     destination = "/home/admin/webapp.zip"
   }
 
-
-
   provisioner "file" {
     source      = "applicaiton/database/users.csv"
     destination = "/home/admin/users.csv"
@@ -69,10 +67,8 @@ build {
 
   provisioner "shell" {
     script = "set.sh"
-  }
+    pause_before = "10s"
+  } 
   
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> d0419b5336d0836d6025ae9c06ee0d6a1ae6ad14
+
