@@ -28,7 +28,7 @@ variable "subnet_id" {
 }
 
 source "amazon-ebs" "my-ami" {
-  region          = var.aws_region
+  region = var.aws_region
 
   ami_name        = "cloud_f23_${formatdate("YYYY_MM_DD_hh_mm_ss", timestamp())}"
   ami_description = "AMI for CSYE 6225"
@@ -53,17 +53,18 @@ source "amazon-ebs" "my-ami" {
 }
 
 build {
-  
+
   sources = ["source.amazon-ebs.my-ami"]
 
   provisioner "file" {
-    source      = "/home/runner/work/webapp/webapp/webapp.zip"
+    source      = "webapp.zip"
     destination = "/home/admin/webapp.zip"
 }
 
 
+
   provisioner "file" {
-    source      = "webapp/database/users.csv"
+    source      = "applicaiton/database/users.csv"
     destination = "/home/admin/users.csv"
   }
 
