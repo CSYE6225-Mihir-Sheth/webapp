@@ -7,14 +7,29 @@ on:
 jobs:
   connect-remote:
     runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0.28
+        env:
+          MYSQL_ROOT_PASSWORD: "root123"
+          MYSQL_DATABASE: "cloud_db"
+          MYSQL_ROOT_HOST: "%"
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup Environment Variables
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+
+      - name: create and configure
         run: |
-          echo "Setting up environment variables..."
           touch .env
           echo port=${{ secrets.PORT }} >> .env
           echo host=${{ secrets.HOST }} >> .env
@@ -24,27 +39,16 @@ jobs:
           echo database=${{ secrets.DATABASE }} >> .env
 
       - name: Install dependencies
-        run: |
-          echo "Installing npm dependencies..."
-          npm install
+        run: npm install
 
       - name: Wait for MySQL to become available
-        run: |
-          echo "Waiting for MySQL..."
-          for i in {1..30}; do
-            nc -z -v -w5 ${{ secrets.HOST }} 3306 && echo "MySQL is up" && break
-            echo "Waiting for MySQL... $i/30"
-            sleep 5
-          done
+        run: sleep 15
 
       - name: Run tests
-        run: |
-          echo "Running tests..."
-          npm test
+        run: npm test
 
       - name: Set up Packer
         run: |
-          echo "Setting up Packer..."
           wget -O packer.zip https://releases.hashicorp.com/packer/1.7.8/packer_1.7.8_linux_amd64.zip
           unzip packer.zip
           chmod +x packer
@@ -59,11 +63,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Run Packer plugin installation
-        run: |
-          echo "Initializing Packer..."
-          packer init .
+        run: packer init .
 
       - name: Check Packer template format
-        run: |
-          echo "Checking Packer template format..."
-          packer fmt -check ami-packer.hcl
+        run: packer fmt -check ami-packer.hcl
