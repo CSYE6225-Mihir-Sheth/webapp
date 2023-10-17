@@ -4,7 +4,6 @@ on:
   push:
   pull_request:
 
-
 jobs:
   connect-remote:
     runs-on: ubuntu-latest
@@ -13,27 +12,39 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: create and configure
+      - name: Setup Environment Variables
         run: |
-              touch .env
-              echo port=${{ secrets.PORT }} >> .env
-              echo host=${{ secrets.HOST }} >> .env
-              echo dialect=${{ secrets.DIALECT }} >> .env
-              echo user=${{ secrets.USER }} >> .env
-              echo password=${{ secrets.PASSWORD }} >> .env
-              echo database=${{ secrets.DATABASE }} >> .env
+          echo "Setting up environment variables..."
+          touch .env
+          echo port=${{ secrets.PORT }} >> .env
+          echo host=${{ secrets.HOST }} >> .env
+          echo dialect=${{ secrets.DIALECT }} >> .env
+          echo user=${{ secrets.USER }} >> .env
+          echo password=${{ secrets.PASSWORD }} >> .env
+          echo database=${{ secrets.DATABASE }} >> .env
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          echo "Installing npm dependencies..."
+          npm install
 
       - name: Wait for MySQL to become available
-        run: sleep 15
+        run: |
+          echo "Waiting for MySQL..."
+          for i in {1..30}; do
+            nc -z -v -w5 ${{ secrets.HOST }} 3306 && echo "MySQL is up" && break
+            echo "Waiting for MySQL... $i/30"
+            sleep 5
+          done
 
       - name: Run tests
-        run: npm test
+        run: |
+          echo "Running tests..."
+          npm test
 
       - name: Set up Packer
         run: |
+          echo "Setting up Packer..."
           wget -O packer.zip https://releases.hashicorp.com/packer/1.7.8/packer_1.7.8_linux_amd64.zip
           unzip packer.zip
           chmod +x packer
@@ -48,7 +59,11 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Run Packer plugin installation
-        run: packer init .
+        run: |
+          echo "Initializing Packer..."
+          packer init .
 
       - name: Check Packer template format
-        run:  packer fmt -check ami-packer.hcl
+        run: |
+          echo "Checking Packer template format..."
+          packer fmt -check ami-packer.hcl
