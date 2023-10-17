@@ -39,6 +39,14 @@ jobs:
 
     - name: zip all files
       run: zip -r webapp.zip .
+      
+    - name: Display the location of webapp.zip
+      run: |
+        pwd
+        ls -la
+
+    - name: Run Packer plugin installation
+      run: packer init .
 
     - name: Run Packer plugin installation
       run: packer init .
