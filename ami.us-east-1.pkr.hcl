@@ -53,12 +53,15 @@ source "amazon-ebs" "my-ami" {
 }
 
 build {
+
   sources = ["source.amazon-ebs.my-ami"]
 
   provisioner "file" {
     source      = "webapp.zip"
     destination = "/home/admin/webapp.zip"
-  }
+}
+
+
 
   provisioner "file" {
     source      = "applicaiton/database/users.csv"
@@ -68,4 +71,5 @@ build {
   provisioner "shell" {
     script = "set.sh"
   }
+  
 }
