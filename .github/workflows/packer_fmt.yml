@@ -40,3 +40,5 @@ jobs:
 
     - name: Check Packer template format
       run: packer fmt -check ami.us-east-1.pkr.hcl
+
+      
