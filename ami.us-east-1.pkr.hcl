@@ -67,6 +67,6 @@ build {
   }
 
   provisioner "shell" {
-    script = "shell_setup.sh"
+    script = "set.sh"
   }
 }
