@@ -33,9 +33,9 @@ assignmentRouter
   .route('/Assignment/:id')
   .get(assignmentController.getAssignmentUsingId)
 
-assignmentRouter
-  .route('/healthz')
-  .all(assignmentController.healthz)
+// assignmentRouter
+//   .route('/healthz')
+//   .all(assignmentController.healthz)
 
 
 assignmentRouter.use((req,res) => {

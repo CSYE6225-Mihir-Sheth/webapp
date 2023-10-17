@@ -3,10 +3,10 @@ import app from '../server.js';
 import request from 'supertest';
 import { expect } from 'chai';
 
-describe("GET /cloud/healthz", () => {
+describe("GET /healthz", () => {
   it("It should respond 200", (done) => { // Use the 'done' callback
     request(app)
-      .get("/cloud/healthz")
+      .get("/healthz")
       .end((err, response) => {
         if (err) {
           done(err); // Pass the error to 'done'

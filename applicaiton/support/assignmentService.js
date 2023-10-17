@@ -6,6 +6,8 @@ import bcrypt from 'bcrypt';
 /**
  * Create a new assignment.
  */
+
+
 export async function createAssignment(data) {
   try {
     const assignment = await db.assignment.create(data);
@@ -15,8 +17,6 @@ export async function createAssignment(data) {
     throw error;
   }
 }
-
-
 // update 
 export const updateAssignment = async (updatedDetails, id) => {
   const { name, points, num_of_attempts, deadline, assignment_updated } = updatedDetails;
