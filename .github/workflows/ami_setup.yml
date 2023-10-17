@@ -48,5 +48,8 @@ jobs:
     - name: Run Packer plugin installation
       run: packer init .
 
+    - name: Run Packer plugin installation
+      run: packer init .
+      
     - name: Build ami with packer
       run: packer build ami.us-east-1.pkr.hcl
