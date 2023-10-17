@@ -170,7 +170,7 @@ export const remove = async (request, response) => {
         }
         
         const assignment = await db.assignment.findOne({ where: { id: request.params.id } });
-
+//
         // If no assignment found, send 404
         if (!assignment) {
             return response.status(404).send('Assignment not found');
