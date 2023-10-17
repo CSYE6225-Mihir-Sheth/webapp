@@ -52,6 +52,7 @@ source "amazon-ebs" "my-ami" {
 }
 
 build {
+  
   sources = ["source.amazon-ebs.my-ami"]
 
   provisioner "file" {
