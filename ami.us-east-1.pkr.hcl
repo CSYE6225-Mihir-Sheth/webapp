@@ -59,13 +59,13 @@ build {
     source      = "webapp.zip"
     destination = "/home/admin/webapp.zip"
   }
+
   provisioner "file" {
     source      = "database/users.csv"
     destination = "/home/admin/users.csv"
   }
 
   provisioner "shell" {
-    source      = "setup.sh"
-    destination = "10s"
+    script = "setup.sh"
   }
 }
