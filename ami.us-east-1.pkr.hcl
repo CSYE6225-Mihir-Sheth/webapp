@@ -2,7 +2,7 @@ packer {
   required_plugins {
     amazon = {
       version = ">= 1.0.0"
-      source  = "github.com/hashicorp/packer-plugin-amazon"
+      source  = "github.com/hashicorp/amazon"
     }
   }
 }
@@ -63,7 +63,6 @@ build {
 
 
 
-
   provisioner "file" {
     source      = "applicaiton/database/users.csv"
     destination = "/home/admin/users.csv"
@@ -73,8 +72,4 @@ build {
     script = "set.sh"
   }
   
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> d0419b5336d0836d6025ae9c06ee0d6a1ae6ad14
