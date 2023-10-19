@@ -52,4 +52,4 @@ jobs:
       run: packer init .
       
     - name: Build ami with packer
-      run: packer build ami.us-east-1.pkr.hcl
+      run: packer build -var 'MARIADB_PASSWORD=${{secrets.PASSWORD}}' -var 'MYSQL_DB=${{secrets.DATABASE}}' -var 'MARIA_DB_USER=${{secrets.USER}}' -var-file=v.pkrvars.hcl ami.us-east-1.pkr.hcl

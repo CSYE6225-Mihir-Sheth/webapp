@@ -17,11 +17,15 @@ export const post = async (request, response) => {
         const base64Credentials = authHeader.split(' ')[1];
         const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
         const [email, password] = credentials.split(':');
-        
         const authenticated = await authenticateUser(email, password);
         if (authenticated === null) {
             return response.status(401).send('');
         }
+
+        const checkForDuplicateKeysInRawBody = (rawBody) => {
+            const keys = (rawBody.match(/"(\w+)":/g) || []).map(key => key.slice(1, -2)); 
+            return keys.length !== [...new Set(keys)].length;
+        };
 
         // Define required fields that should be present in request body
         const requiredFields = [
@@ -30,13 +34,17 @@ export const post = async (request, response) => {
             "num_of_attempts",
             "deadline",
         ];
-//change made
+
         const newDetails = request.body;
         
+        // Check for extra parameters or repetitions
+        const requestFields = Object.keys(newDetails);
+        if (requestFields.length !== requiredFields.length || requestFields.some((field) => !requiredFields.includes(field))) {
+            return response.status(400).send('Bad Request: Invalid fields in request.');
+        }
+
         // Check if all required fields are present in the request body
-        if (
-            requiredFields.some((field) => !newDetails.hasOwnProperty(field))
-        ) {
+        if (requiredFields.some((field) => !newDetails.hasOwnProperty(field))) {
             return response.status(400).send('Bad Request: Missing fields in request.');
         }
         
@@ -49,12 +57,13 @@ export const post = async (request, response) => {
             throw new Error('Failed to save assignment details.');
         }
 
-        return response.status(201).send('Assignment created successfully.');
+        return response.status(201).send(savedDetails);
     } catch (error) {
         console.error('Error:', error.message);
         return response.status(400).send('Bad Request: An error occurred.');
     }
 };
+
 
 
 
@@ -149,6 +158,11 @@ export const put = async (request, response) => {
 
 export const remove = async (request, response) => {
     try {
+
+        if (Object.keys(request.body).length !== 0) {
+            return response.status(400).send('Request body should be empty.');
+            }
+
         const health = await healthCheck();
         if (health !== true) {
             return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate' ).send('');
@@ -194,6 +208,10 @@ export const remove = async (request, response) => {
 
 export const get = async (request, response) => {
     try{
+
+    if (Object.keys(request.body).length !== 0) {
+        return response.status(400).send('Request body should be empty.');
+        }
     const health = await healthCheck();
     if (health !== true) {
         return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate' ).send('');          
@@ -209,16 +227,16 @@ export const get = async (request, response) => {
         const [email, password] = credentials.split(':');
 
         const authenticated = await authenticateUser(email, password);
-
+        
         if (authenticated === null) {
             return response.status(401).send('');
         }
-
+        
         const assignments = await getAllAssignments(authenticated);
-
+        
         if (assignments.length === 0) {
                 // Handle the case when no assignments are found for the user
-            return response.status(404).send('');
+            return response.status(200).send('');
        } else {
                 //Send the assignments as a JSON response
             return response.status(200).send(assignments);
@@ -276,6 +294,11 @@ export const get = async (request, response) => {
 
 export const getAssignmentUsingId = async (request, response) => {
     try {
+
+        if (Object.keys(request.body).length !== 0) {
+            return response.status(400).send('Request body should be empty.');
+            }
+
         const health = await healthCheck();
         if (health !== true) {
             return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate').send('');
@@ -311,6 +334,20 @@ export const getAssignmentUsingId = async (request, response) => {
     }
 };
 
+// PATCH
+export const patch = (request, response) => {
+    return response.status(405).send('Method Not Allowed');
+};
+
+// HEAD
+export const head = (request, response) => {
+    return response.status(405).send('Method Not Allowed');
+};
+
+// OPTIONS
+export const options = (request, response) => {
+    return response.status(405).send('Method Not Allowed');
+};
 
 
 

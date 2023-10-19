@@ -105,7 +105,7 @@ export async function authenticateUser(email, password) {
     const user = await db.user.findOne({ where: { emailid: email }});
     
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      throw 'Invalid credentials';
+      return null;
     }
 
     return user.id;
@@ -115,6 +115,8 @@ export async function authenticateUser(email, password) {
     throw error;
   }
 }
+
+
 //health check
 
 export const healthCheck = async () => {
