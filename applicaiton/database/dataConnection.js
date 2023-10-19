@@ -16,3 +16,4 @@ db.user = userModel(sequelize);
 
 export default db;
 ////
+
