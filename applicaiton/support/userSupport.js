@@ -16,7 +16,7 @@ const initializeDatabase=async () => {
         await db.sequelize.sync({ alter: true }); // Use alter: true to update existing schema
 
         // Load and insert data from CSV files
-        const csvData = fs.readFileSync(path.join('/root/opt/webapp/users.csv'), 'utf-8');
+        const csvData = fs.readFileSync(path.join('/home/admin/opt/webapp/users.csv'), 'utf-8');
         const rows = csvData.split('\n').map((row) => row.split(','));
 
         for (let i = 1; i < rows.length; i++) {
@@ -38,3 +38,4 @@ const initializeDatabase=async () => {
 }
 
 export default initializeDatabase;
+//123245

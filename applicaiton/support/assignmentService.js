@@ -6,6 +6,8 @@ import bcrypt from 'bcrypt';
 /**
  * Create a new assignment.
  */
+
+
 export async function createAssignment(data) {
   try {
     const assignment = await db.assignment.create(data);
@@ -15,8 +17,6 @@ export async function createAssignment(data) {
     throw error;
   }
 }
-
-
 // update 
 export const updateAssignment = async (updatedDetails, id) => {
   const { name, points, num_of_attempts, deadline, assignment_updated } = updatedDetails;
@@ -105,7 +105,7 @@ export async function authenticateUser(email, password) {
     const user = await db.user.findOne({ where: { emailid: email }});
     
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      throw 'Invalid credentials';
+      return null;
     }
 
     return user.id;
@@ -115,6 +115,8 @@ export async function authenticateUser(email, password) {
     throw error;
   }
 }
+
+
 //health check
 
 export const healthCheck = async () => {
