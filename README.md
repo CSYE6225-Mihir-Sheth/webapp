@@ -14,8 +14,7 @@
   - [Testing the Service](#testing-the-service)
 
 ## Introduction
-WebApp is built on **Node.js**, a server-side JavaScript runtime environment that enables the development of fast and scalable network applications.
-
+WebApp is built on **Node.js**, a server-side JavaScript runtime environment that enables the development of fast and scalable network applications..
 ## User Requirements
 - Users can create a new account with email address, password, first name, and last name.
 - `account_created` is auto-set to the current timestamp upon successful user creation.
