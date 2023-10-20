@@ -15,5 +15,5 @@ provisioner_users_destination                      = "/home/admin/users.csv"
 provisioner_webapp_source                          = "webapp.zip"
 provisioner_webapp_destination                     = "/home/admin/webapp.zip"
 ami_regions = [
-  "us-east-1"
+  "us-east-1"   
 ]
