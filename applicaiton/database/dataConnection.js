@@ -10,8 +10,12 @@ const sequelize = new Sequelize(
 
 let db = {}
 db.sequelize = sequelize;
-
+//zz
 db.assignment = assignmentModel(sequelize);
 db.user = userModel(sequelize);
 
 export default db;
+
+
+
+

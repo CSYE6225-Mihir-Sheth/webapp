@@ -2,7 +2,7 @@ name: MySQL Integration Test
 
 on:
   pull_request:
-    branches: [testing]
+    branches: [main]
 
 jobs:
   connect-remote:
@@ -12,8 +12,8 @@ jobs:
       mysql:
         image: mysql:8.0.28
         env:
-          MYSQL_ROOT_PASSWORD: "root123"
-          MYSQL_DATABASE: "cloud_db"
+          MYSQL_ROOT_PASSWORD: ${{ secrets.PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.DATABASE }}
           MYSQL_ROOT_HOST: "%"
         ports:
           - 3306:3306
@@ -46,4 +46,3 @@ jobs:
 
       - name: Run tests
         run: npm test
-
