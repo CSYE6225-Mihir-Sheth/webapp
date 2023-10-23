@@ -2,7 +2,7 @@ name: Validate Packer Configuration
 
 on:
   pull_request:
-    branches: [testing]
+    branches: [main]
 
 jobs:
   build:
@@ -39,9 +39,12 @@ jobs:
 
     - name: zip all files
       run: zip -r webapp.zip .
-      
+
     - name: Run Packer plugin installation
       run: packer init .
 
     - name: Validate Packer template
-      run: packer validate ami.us-east-1.pkr.hcl
+
+      run: packer validate -var 'MARIA_DB_PASSWORD=${{secrets.PASSWORD}}' -var 'MYSQL_DB=${{secrets.DATABASE}}' -var 'MARIA_DB_USER=${{secrets.USER}}' -var-file=v.pkrvars.hcl ami.us-east-1.pkr.hcl
+
+
