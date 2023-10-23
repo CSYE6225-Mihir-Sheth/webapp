@@ -2,7 +2,7 @@ name: AMI Setup
 
 on:
   push: 
-    branches: [testing]
+    branches: [main]
 
 jobs: 
   validate-packer-file:
