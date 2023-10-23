@@ -154,3 +154,4 @@ build {
       "MYSQL_DB=${var.MYSQL_DB}"
     ]
   }
+}
