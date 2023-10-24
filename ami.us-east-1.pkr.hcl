@@ -112,7 +112,7 @@ variable "ami_regions" {
 }
 
 source "amazon-ebs" "webapp" {
-  source_ami = "${var.source_amis}"
+  source_ami = "${var.source_ami}"
 
   ami_name        = "${var.ami_name}"
   ami_description = "${var.ami_description}"
