@@ -7,7 +7,7 @@ packer {
   }
 }
 
-variable "aws_region"   {
+variable "aws_region" {
   type    = string
   default = null
 }
@@ -112,7 +112,7 @@ variable "ami_regions" {
 }
 
 source "amazon-ebs" "webapp" {
-  source_ami = "${var.source_ami}"
+  source_ami = "${var.source_amis}"
 
   ami_name        = "${var.ami_name}"
   ami_description = "${var.ami_description}"
