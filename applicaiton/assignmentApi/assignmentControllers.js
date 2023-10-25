@@ -103,7 +103,7 @@ export const put = async (request, response) => {
         let newDetails = request.body;
         newDetails.assignment_updated = new Date().toISOString();
 
-        // (Optionally) You might want to validate the newDetails here and return a 400 if they are not valid.
+    
 
         const updatedDetails = await updateAssignment(newDetails, id);
         if (!updatedDetails) {

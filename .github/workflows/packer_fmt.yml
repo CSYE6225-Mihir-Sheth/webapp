@@ -3,7 +3,7 @@ name: Packer Format
 on:
   pull_request:
 
-    branches: [testing]
+    branches: [main]
 
 
 jobs:
