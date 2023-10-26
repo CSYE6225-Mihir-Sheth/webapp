@@ -146,7 +146,7 @@ build {
     destination = "${var.provisioner_webapp_destination}"
   }
 
-    provisioner "file" {
+  provisioner "file" {
     source      = "app.service"
     destination = "/home/admin/app.service"
   }
