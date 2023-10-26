@@ -12,9 +12,10 @@ sudo mv /home/admin/webapp.zip /opt/csye6225/webapp.zip
 sudo mv /home/admin/users.csv /opt/csye6225/users.csv
 cd /opt/csye6225
 sudo unzip -o webapp.zip
+
 sudo npm i
-sudo cp /home/admin/webapp.service /etc/systemd/system/
+sudo cp /home/admin/app.service /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable webapp.service
-sudo systemctl start webapp.service
+sudo systemctl enable app.service
+sudo systemctl start app.service
 
