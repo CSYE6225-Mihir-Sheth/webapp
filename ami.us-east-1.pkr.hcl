@@ -146,6 +146,11 @@ build {
     destination = "${var.provisioner_webapp_destination}"
   }
 
+  provisioner "file" {
+    source      = "app.service"
+    destination = "/home/admin/app.service"
+  }
+
   provisioner "shell" {
     script = "set.sh"
     environment_vars = [
