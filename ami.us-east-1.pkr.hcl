@@ -150,6 +150,10 @@ build {
     source      = "app.service"
     destination = "/home/admin/app.service"
   }
+  provisioner "file" {
+    source      = "cloudwatch-config.json"
+    destination = "/home/admin/cloudwatch-config.json"
+  }
 
   provisioner "shell" {
     script = "set.sh"
