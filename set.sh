@@ -13,7 +13,7 @@ sudo mv /home/admin/users.csv /opt/csye6225/users.csv
 sudo mv /home/admin/cloudwatch-config.json /opt/csye6225/cloudwatch-config.json
 cd /opt/csye6225
 sudo unzip -o webapp.zip
-
+cd /opt/csye6225/webapp
 sudo npm i
 sudo cp /home/admin/app.service /etc/systemd/system/
 sudo systemctl daemon-reload
