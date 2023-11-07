@@ -11,9 +11,8 @@ sudo useradd -s /bin/false -g csye6225 -d /opt/csye6225 -m csye6225
 sudo mv /home/admin/webapp.zip /opt/csye6225/webapp.zip
 cd /opt/csye6225
 sudo unzip -o webapp.zip
-sudo mv /home/admin/users.csv /opt/csye6225/webapp/users.csv
-sudo mv /home/admin/cloudwatch-config.json /opt/csye6225/webapp/cloudwatch-config.json
-cd /opt/csye6225/webapp
+sudo mv /home/admin/users.csv /opt/csye6225/users.csv
+sudo mv /home/admin/cloudwatch-config.json /opt/csye6225/cloudwatch-config.json
 sudo npm i
 sudo cp /home/admin/app.service /etc/systemd/system/
 sudo systemctl daemon-reload
