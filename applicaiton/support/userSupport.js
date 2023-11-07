@@ -16,7 +16,7 @@ const initializeDatabase=async () => {
         await db.sequelize.sync({ alter: true }); // Use alter: true to update existing schema
 
         // Load and insert data from CSV files
-        const csvData = fs.readFileSync(path.join('/home/admin/opt/webapp/users.csv'), 'utf-8');
+        const csvData = fs.readFileSync(path.join('/opt/csye6225/users.csv'), 'utf-8');
         const rows = csvData.split('\n').map((row) => row.split(','));
 
         for (let i = 1; i < rows.length; i++) {
@@ -33,7 +33,7 @@ const initializeDatabase=async () => {
 
         console.log('Database bootstrapped successfully.');
     } catch (error) {
-        console.error('Error bootstrapping the database:');
+        console.error('Error bootstrapping the database:', error);
     }
 }
 

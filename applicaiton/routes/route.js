@@ -33,8 +33,7 @@ assignmentRouter
   .patch(patch)
   .head(head)
   .options(options);
-
-// Uncomment the healthz route if needed
+//
 // assignmentRouter
 //   .route('/healthz')
 //   .all(assignmentController.healthz)
