@@ -7,7 +7,6 @@ Type=simple
 User=csye6225
 Group=csye6225
 WorkingDirectory=/opt/csye6225
-
 ExecStart=/usr/bin/npm start
 Restart=always
 RestartSec=10
