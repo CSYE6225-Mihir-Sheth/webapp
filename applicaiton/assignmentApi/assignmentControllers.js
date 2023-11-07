@@ -1,16 +1,19 @@
 import { authenticateUser, createAssignment, removeAssignment, updateAssignment, getAllAssignments, getAssignmentById, healthCheck} from "../support/assignmentService.js";
 import db from "../database/dataConnection.js";
+import logger from "../support/logging.js"
 
 //create
 export const post = async (request, response) => {
     try {
         const health = await healthCheck();
         if (health !== true) {
+            logger.error('Health check failed, sending 503');
             return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate' ).send('');
         }
         
         const authHeader = request.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Basic ')) {
+            logger.error('Authorization header missing or not Basic, sending 401');
             return response.status(401).send('');
         }
 
@@ -19,6 +22,7 @@ export const post = async (request, response) => {
         const [email, password] = credentials.split(':');
         const authenticated = await authenticateUser(email, password);
         if (authenticated === null) {
+            logger.error('User authentication failed, sending 401');
             return response.status(401).send('');
         }
 
@@ -40,11 +44,13 @@ export const post = async (request, response) => {
         // Check for extra parameters or repetitions
         const requestFields = Object.keys(newDetails);
         if (requestFields.length !== requiredFields.length || requestFields.some((field) => !requiredFields.includes(field))) {
+            logger.error('Request has invalid fields, sending 400');
             return response.status(400).send('Bad Request: Invalid fields in request.');
         }
 
         // Check if all required fields are present in the request body
         if (requiredFields.some((field) => !newDetails.hasOwnProperty(field))) {
+            logger.error('Missing fields in request body, sending 400');
             return response.status(400).send('Bad Request: Missing fields in request.');
         }
         
@@ -54,12 +60,13 @@ export const post = async (request, response) => {
         
         const savedDetails = await createAssignment(newDetails);
         if (!savedDetails) {
+            logger.error('Failed to save assignment details, sending 500');
             throw new Error('Failed to save assignment details.');
         }
-
+        logger.info(`Assignment created successfully with ID: ${savedDetails.id}`); // Assuming savedDetails has an ID field
         return response.status(201).send(savedDetails);
     } catch (error) {
-        console.error('Error:', error.message);
+        logger.error(`An error occurred: ${error.message}`);
         return response.status(400).send('Bad Request: An error occurred.');
     }
 };
@@ -73,11 +80,13 @@ export const put = async (request, response) => {
     try {
         const health = await healthCheck();
         if (health !== true) {
+            logger.error('Health check failed, sending 503');
             return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate').send('');
         }
 
         const authHeader = request.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Basic ')) {
+            logger.error('Authorization header missing or not Basic, sending 401');
             return response.status(401).send('');
         }
 
@@ -87,15 +96,18 @@ export const put = async (request, response) => {
 
         const authenticated = await authenticateUser(email, password);
         if (authenticated === null) {
+            logger.error('User authentication failed, sending 401');
             return response.status(401).send('');
         }
 
         const assignment = await db.assignment.findOne({ where: { id: request.params.id } });
         if (!assignment) {
+            logger.error('Assignment not found, sending 404');
             return response.status(404).send('Assignment not found');
         }
 
         if (assignment.user_id !== authenticated) {
+            logger.error('Unauthorized update attempt, sending 403');
             return response.status(403).send('Forbidden: You are not authorized to update this assignment');
         }
 
@@ -107,12 +119,13 @@ export const put = async (request, response) => {
 
         const updatedDetails = await updateAssignment(newDetails, id);
         if (!updatedDetails) {
+            logger.error('Failed to update assignment details, throwing error');
             throw new Error('Failed to update assignment details.');
         }
-
+        logger.info(`Assignment with ID: ${request.params.id} updated successfully`);
         return response.status(204).send('');
     } catch (error) {
-        console.error('Error:', error.message);
+        logger.error(`An error occurred while updating assignment: ${error.message}`);
         return response.status(400).send('Bad Request: An error occurred.');
     }
 };
@@ -160,16 +173,19 @@ export const remove = async (request, response) => {
     try {
 
         if (Object.keys(request.body).length !== 0) {
+            logger.error('Request body should be empty, sending 400');
             return response.status(400).send('Request body should be empty.');
             }
 
         const health = await healthCheck();
         if (health !== true) {
+            logger.error('Health check failed, sending 503');
             return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate' ).send('');
         }
         const authHeader = request.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith('Basic ')) {
+            logger.error('Authorization header missing or not Basic, sending 401');
             return response.status(401).send('');
         }
 
@@ -180,6 +196,7 @@ export const remove = async (request, response) => {
         const authenticated = await authenticateUser(email, password);
 
         if (authenticated === null) {
+            logger.error('User authentication failed, sending 401');
             return response.status(401).send('');
         }
         
@@ -187,20 +204,22 @@ export const remove = async (request, response) => {
 //
         // If no assignment found, send 404
         if (!assignment) {
+            logger.error('Assignment not found, sending 404');
             return response.status(404).send('Assignment not found');
         }
 
         // Check if authenticated user is authorized to delete assignment
         if (assignment.user_id !== authenticated) {
+            logger.error('Unauthorized deletion attempt, sending 401');
             return response.status(401).send("You are not authorized to delete this assignment");
         }
 
         await removeAssignment(assignment.id);
-
+        logger.info(`Assignment with ID: ${request.params.id} removed successfully`);
         // Send 204 after successful deletion
         return response.status(204).send('');
     } catch (error) {
-        console.error(error);
+        logger.error(`An error occurred while removing assignment: ${error.message}`);
         return response.status(400).send('');
     }
 };
@@ -210,15 +229,18 @@ export const get = async (request, response) => {
     try{
 
     if (Object.keys(request.body).length !== 0) {
+        logger.error('Request body should be empty, sending 400');
         return response.status(400).send('Request body should be empty.');
         }
     const health = await healthCheck();
     if (health !== true) {
+        logger.error('Health check failed, sending 503');
         return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate' ).send('');          
     }
         const authHeader = request.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith('Basic ')) {
+            logger.error('Authorization header missing or not Basic, sending 401');
             return response.status(401).send('');
         }
 
@@ -229,19 +251,23 @@ export const get = async (request, response) => {
         const authenticated = await authenticateUser(email, password);
         
         if (authenticated === null) {
+            logger.error('User authentication failed, sending 401');
             return response.status(401).send('');
         }
         
         const assignments = await getAllAssignments(authenticated);
         
         if (assignments.length === 0) {
+            logger.info('No assignments found for the user, sending 200 with empty array');
                 // Handle the case when no assignments are found for the user
             return response.status(200).send('');
        } else {
+            logger.info('Assignments retrieved successfully, sending 200 with data');
                 //Send the assignments as a JSON response
             return response.status(200).send(assignments);
             }
     }   catch (error) {
+            logger.error(`An error occurred while retrieving assignments: ${error.message}, sending 400`);
             return response.status(400).send('');
     }
 };
@@ -296,17 +322,20 @@ export const getAssignmentUsingId = async (request, response) => {
     try {
 
         if (Object.keys(request.body).length !== 0) {
+            logger.error('Request body should be empty, sending 400');
             return response.status(400).send('Request body should be empty.');
             }
 
         const health = await healthCheck();
         if (health !== true) {
+            logger.error('Health check failed, sending 503');
             return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate').send('');
         }
 
         const authHeader = request.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith('Basic ')) {
+            logger.error('Authorization header missing or not Basic, sending 401');
             return response.status(401).send('Unauthorized'); // No auth header or malformed auth header
         }
 
@@ -317,35 +346,40 @@ export const getAssignmentUsingId = async (request, response) => {
         const authenticated = await authenticateUser(email, password);
 
         if (authenticated === null) {
+            logger.error('User authentication failed, sending 401');
             return response.status(401).send('Invalid credentials'); // Invalid username/password
         }
 
         const assignment = await db.assignment.findOne({ where: { id: request.params.id } });
 
         if (!assignment) {
+            logger.error('Assignment not found, sending 404');
             return response.status(404).send('Assignment not found'); // No assignment found with provided ID
         }
-
+        logger.info(`Assignment id ${request.params.id} retrieved successfully`);
         return response.status(200).send(assignment); // Return the found assignment
 
     } catch (error) {
-        console.error('Error:', error.message);
+        logger.error(`An error occurred: ${error.message}, sending 400`);
         return response.status(400).send('Bad Request'); // Other errors (e.g. malformed request)
     }
 };
 
 // PATCH
 export const patch = (request, response) => {
+    logger.error('PATCH method not allowed, sending 405');
     return response.status(405).send('Method Not Allowed');
 };
 
 // HEAD
 export const head = (request, response) => {
+    logger.error('HEAD method not allowed, sending 405');
     return response.status(405).send('Method Not Allowed');
 };
 
 // OPTIONS
 export const options = (request, response) => {
+    logger.error('OPTIONS method not allowed, sending 405');
     return response.status(405).send('Method Not Allowed');
 };
 
@@ -355,20 +389,26 @@ export const options = (request, response) => {
 //health checking -assignment
 export const healthz = async (request, response) => {
     if (request.method !== 'GET') {
+        logger.error('Health check called with method other than GET, sending 405');
         return response.status(405).send('');
     } else if (request.headers['content-length'] > 0) {
+        logger.error('Health check called with non-empty body, sending 400');
         return response.status(400).send('');
     } else if (request.query && Object.keys(request.query).length > 0) {
+        logger.error('Health check called with query parameters, sending 400');
         return response.status(400).send('');
     } else {
         try {
             const health = await healthCheck();
             if(health === true) {
+                logger.info('Health check passed, sending 200');
                 return response.status(200).header('Cache-Control', 'no-cache, no-store, must-revalidate').send('');
             } else {
+                logger.error('Health check failed, sending 503');
                 return response.status(503).header('Cache-Control', 'no-cache, no-store, must-revalidate').send('');
             }
         } catch (error) {
+            logger.error(`Health check resulted in an error: ${error.message}, sending 503`);
             return response.status(503).header('Cache-Control', 'no-cache, no-store, must-revalidate').send('');
         }
     }
