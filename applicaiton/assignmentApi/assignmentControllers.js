@@ -5,19 +5,24 @@ import StatsD from "node-statsd";
 import config from "../database/dbConfig.js";
 
 const  statsd = new StatsD({ host: config.dbC.statsdhost, port: config.dbC.statsdPort });
+
+function useRegex(input) {
+    let regex = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?([Zz])$/;
+    return regex.test(input);
+}
 //create
 export const post = async (request, response) => {
     statsd.increment("endpoint.post.post");
     try {
         const health = await healthCheck();
         if (health !== true) {
-            logger.error('Health check failed, sending 503');
+            logger.warn('Health check failed, sending 503');
             return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate' ).send('');
         }
         
         const authHeader = request.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Basic ')) {
-            logger.error('Authorization header missing or not Basic, sending 401');
+            logger.warn('Authorization header missing or not Basic, sending 401');
             return response.status(401).send('');
         }
 
@@ -26,7 +31,7 @@ export const post = async (request, response) => {
         const [email, password] = credentials.split(':');
         const authenticated = await authenticateUser(email, password);
         if (authenticated === null) {
-            logger.error('User authentication failed, sending 401');
+            logger.warn('User authentication failed, sending 401');
             return response.status(401).send('');
         }
 
@@ -45,16 +50,38 @@ export const post = async (request, response) => {
 
         const newDetails = request.body;
         
+        if(!Number.isInteger(points) || !Number.isInteger(num_of_attempts)){
+            logger.warn("Bad request: Invalid body parameters");
+            return res.status(400).json({error: 'Bad Request'}).send();
+        }
+        if (!(typeof req.body.name === 'string' || req.body.name instanceof String)){
+            logger.warn("Bad request: Invalid body parameters");
+            return res.status(400).json({error: 'Bad Request'}).send();
+        }
+        if(!checkDate(deadline)){
+            logger.warn("Bad request: Invalid body parameters");
+            return res.status(400).json({error: 'Bad Request'}).send();
+        }
+        if(!useRegex(deadline)){
+            logger.warn("Bad request: Invalid deadline format");
+            return response.status(400).json({error: 'Bad Request: Invalid deadline format'});
+        }
+        if(!req.body.name || !points || !num_of_attempts || !deadline || Object.keys(req.body).length > 4){
+            logger.warn("Bad request: Invalid body parameters");
+            return res.status(400).json({error: 'Bad Request'}).send();
+        }
+        
+        
         // Check for extra parameters or repetitions
         const requestFields = Object.keys(newDetails);
         if (requestFields.length !== requiredFields.length || requestFields.some((field) => !requiredFields.includes(field))) {
-            logger.error('Request has invalid fields, sending 400');
+            logger.warn('Request has invalid fields, sending 400');
             return response.status(400).send('Bad Request: Invalid fields in request.');
         }
 
         // Check if all required fields are present in the request body
         if (requiredFields.some((field) => !newDetails.hasOwnProperty(field))) {
-            logger.error('Missing fields in request body, sending 400');
+            logger.warn('Missing fields in request body, sending 400');
             return response.status(400).send('Bad Request: Missing fields in request.');
         }
         
@@ -86,13 +113,13 @@ export const put = async (request, response) => {
     try {
         const health = await healthCheck();
         if (health !== true) {
-            logger.error('Health check failed, sending 503');
+            logger.warn('Health check failed, sending 503');
             return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate').send('');
         }
 
         const authHeader = request.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Basic ')) {
-            logger.error('Authorization header missing or not Basic, sending 401');
+            logger.warn('Authorization header missing or not Basic, sending 401');
             return response.status(401).send('');
         }
 
@@ -102,23 +129,45 @@ export const put = async (request, response) => {
 
         const authenticated = await authenticateUser(email, password);
         if (authenticated === null) {
-            logger.error('User authentication failed, sending 401');
+            logger.warn('User authentication failed, sending 401');
             return response.status(401).send('');
         }
 
         const assignment = await db.assignment.findOne({ where: { id: request.params.id } });
         if (!assignment) {
-            logger.error('Assignment not found, sending 404');
+            logger.warn('Assignment not found, sending 404');
             return response.status(404).send('Assignment not found');
         }
 
         if (assignment.user_id !== authenticated) {
-            logger.error('Unauthorized update attempt, sending 403');
+            logger.warn('Unauthorized update attempt, sending 403');
             return response.status(403).send('Forbidden: You are not authorized to update this assignment');
         }
 
         const id = request.params.id;
         let newDetails = request.body;
+
+        if(!Number.isInteger(points) || !Number.isInteger(num_of_attempts)){
+            logger.warn("Bad request: Invalid body parameters");
+            return res.status(400).json({error: 'Bad Request'}).send();
+        }
+        if (!(typeof req.body.name === 'string' || req.body.name instanceof String)){
+            logger.warn("Bad request: Invalid body parameters");
+            return res.status(400).json({error: 'Bad Request'}).send();
+        }
+        if(!checkDate(deadline)){
+            logger.warn("Bad request: Invalid body parameters");
+            return res.status(400).json({error: 'Bad Request'}).send();
+        }
+        if(!useRegex(deadline)){
+            logger.warn("Bad request: Invalid deadline format");
+            return response.status(400).json({error: 'Bad Request: Invalid deadline format'});
+        }
+        if(!req.body.name || !points || !num_of_attempts || !deadline || Object.keys(req.body).length > 4){
+            logger.warn("Bad request: Invalid body parameters");
+            return res.status(400).json({error: 'Bad Request'}).send();
+        }
+
         newDetails.assignment_updated = new Date().toISOString();
 
     
@@ -181,19 +230,19 @@ export const remove = async (request, response) => {
     try {
 
         if (Object.keys(request.body).length !== 0) {
-            logger.error('Request body should be empty, sending 400');
+            logger.warn('Request body should be empty, sending 400');
             return response.status(400).send('Request body should be empty.');
             }
 
         const health = await healthCheck();
         if (health !== true) {
-            logger.error('Health check failed, sending 503');
+            logger.warn('Health check failed, sending 503');
             return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate' ).send('');
         }
         const authHeader = request.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith('Basic ')) {
-            logger.error('Authorization header missing or not Basic, sending 401');
+            logger.warn('Authorization header missing or not Basic, sending 401');
             return response.status(401).send('');
         }
 
@@ -204,7 +253,7 @@ export const remove = async (request, response) => {
         const authenticated = await authenticateUser(email, password);
 
         if (authenticated === null) {
-            logger.error('User authentication failed, sending 401');
+            logger.warn('User authentication failed, sending 401');
             return response.status(401).send('');
         }
         
@@ -218,7 +267,7 @@ export const remove = async (request, response) => {
 
         // Check if authenticated user is authorized to delete assignment
         if (assignment.user_id !== authenticated) {
-            logger.error('Unauthorized deletion attempt, sending 401');
+            logger.warn('Unauthorized deletion attempt, sending 401');
             return response.status(401).send("You are not authorized to delete this assignment");
         }
 
@@ -238,18 +287,18 @@ export const get = async (request, response) => {
     try{
 
     if (Object.keys(request.body).length !== 0) {
-        logger.error('Request body should be empty, sending 400');
+        logger.warn('Request body should be empty, sending 400');
         return response.status(400).send('Request body should be empty.');
         }
     const health = await healthCheck();
     if (health !== true) {
-        logger.error('Health check failed, sending 503');
+        logger.warn('Health check failed, sending 503');
         return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate' ).send('');          
     }
         const authHeader = request.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith('Basic ')) {
-            logger.error('Authorization header missing or not Basic, sending 401');
+            logger.warn('Authorization header missing or not Basic, sending 401');
             return response.status(401).send('');
         }
 
@@ -260,7 +309,7 @@ export const get = async (request, response) => {
         const authenticated = await authenticateUser(email, password);
         
         if (authenticated === null) {
-            logger.error('User authentication failed, sending 401');
+            logger.warn('User authentication failed, sending 401');
             return response.status(401).send('');
         }
         
@@ -332,20 +381,20 @@ export const getAssignmentUsingId = async (request, response) => {
     try {
 
         if (Object.keys(request.body).length !== 0) {
-            logger.error('Request body should be empty, sending 400');
+            logger.warn('Request body should be empty, sending 400');
             return response.status(400).send('Request body should be empty.');
             }
 
         const health = await healthCheck();
         if (health !== true) {
-            logger.error('Health check failed, sending 503');
+            logger.warn('Health check failed, sending 503');
             return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate').send('');
         }
 
         const authHeader = request.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith('Basic ')) {
-            logger.error('Authorization header missing or not Basic, sending 401');
+            logger.warn('Authorization header missing or not Basic, sending 401');
             return response.status(401).send('Unauthorized'); // No auth header or malformed auth header
         }
 
@@ -356,7 +405,7 @@ export const getAssignmentUsingId = async (request, response) => {
         const authenticated = await authenticateUser(email, password);
 
         if (authenticated === null) {
-            logger.error('User authentication failed, sending 401');
+            logger.warn('User authentication failed, sending 401');
             return response.status(401).send('Invalid credentials'); // Invalid username/password
         }
 
@@ -377,19 +426,19 @@ export const getAssignmentUsingId = async (request, response) => {
 
 // PATCH
 export const patch = (request, response) => {
-    logger.error('PATCH method not allowed, sending 405');
+    logger.warn('PATCH method not allowed, sending 405');
     return response.status(405).send('Method Not Allowed');
 };
 
 // HEAD
 export const head = (request, response) => {
-    logger.error('HEAD method not allowed, sending 405');
+    logger.warn('HEAD method not allowed, sending 405');
     return response.status(405).send('Method Not Allowed');
 };
 
 // OPTIONS
 export const options = (request, response) => {
-    logger.error('OPTIONS method not allowed, sending 405');
+    logger.warn('OPTIONS method not allowed, sending 405');
     return response.status(405).send('Method Not Allowed');
 };
 
@@ -399,13 +448,13 @@ export const options = (request, response) => {
 //health checking -assignment
 export const healthz = async (request, response) => {
     if (request.method !== 'GET') {
-        logger.error('Health check called with method other than GET, sending 405');
+        logger.warn('Health check called with method other than GET, sending 405');
         return response.status(405).send('');
     } else if (request.headers['content-length'] > 0) {
-        logger.error('Health check called with non-empty body, sending 400');
+        logger.warn('Health check called with non-empty body, sending 400');
         return response.status(400).send('');
     } else if (request.query && Object.keys(request.query).length > 0) {
-        logger.error('Health check called with query parameters, sending 400');
+        logger.warn('Health check called with query parameters, sending 400');
         return response.status(400).send('');
     } else {
         try {
