@@ -15,7 +15,6 @@ sudo unzip -o /opt/csye6225/webapp.zip -d /opt/csye6225/webapp
 sudo cp /home/admin/cloudwatch-config.json /opt/csye6225/webapp/cloudwatch-config.json
 sudo cp /opt/csye6225/webapp/cloudwatch-config.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
 cd /opt/csye6225/webapp
-sudo mv /home/admin/webapp.zip /opt/csye6225/webapp.zip
 sudo npm i
 sudo systemctl daemon-reload
 sudo systemctl enable app.service
