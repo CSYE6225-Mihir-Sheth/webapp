@@ -2,6 +2,7 @@ import { authenticateUser, createAssignment, removeAssignment, updateAssignment,
 import db from "../database/dataConnection.js";
 import logger from "../support/logging.js"
 import StatsD from "node-statsd";
+import config from "../database/dbConfig.js";
 
 const  statsd = new StatsD({ host: config.dbC.statsdhost, port: config.dbC.statsdPort });
 //create
