@@ -21,3 +21,4 @@ sudo systemctl enable app.service
 sudo systemctl start app.service
 sudo systemctl enable amazon-cloudwatch-agent
 sudo systemctl start amazon-cloudwatch-agent
+
