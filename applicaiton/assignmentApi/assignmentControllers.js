@@ -1,9 +1,13 @@
 import { authenticateUser, createAssignment, removeAssignment, updateAssignment, getAllAssignments, getAssignmentById, healthCheck} from "../support/assignmentService.js";
 import db from "../database/dataConnection.js";
 import logger from "../support/logging.js"
+import StatsD from "node-statsd";
+import config from "../database/dbConfig.js";
 
+const  statsd = new StatsD({ host: config.dbC.statsdhost, port: config.dbC.statsdPort });
 //create
 export const post = async (request, response) => {
+    statsd.increment("endpoint.post.post");
     try {
         const health = await healthCheck();
         if (health !== true) {
@@ -77,6 +81,8 @@ export const post = async (request, response) => {
 //update
 
 export const put = async (request, response) => {
+
+    statsd.increment("endpoint.put.put");
     try {
         const health = await healthCheck();
         if (health !== true) {
@@ -170,6 +176,8 @@ export const put = async (request, response) => {
 // };
 
 export const remove = async (request, response) => {
+    statsd.increment("endpoint.remove.remove");
+
     try {
 
         if (Object.keys(request.body).length !== 0) {
@@ -226,6 +234,7 @@ export const remove = async (request, response) => {
 //get All assignments
 
 export const get = async (request, response) => {
+    statsd.increment("endpoint.get.get");
     try{
 
     if (Object.keys(request.body).length !== 0) {
@@ -319,6 +328,7 @@ export const get = async (request, response) => {
 //updated get all by id
 
 export const getAssignmentUsingId = async (request, response) => {
+    statsd.increment("endpoint.get.getAssignmentUsingId");
     try {
 
         if (Object.keys(request.body).length !== 0) {
