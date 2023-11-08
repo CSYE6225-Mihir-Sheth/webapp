@@ -3,7 +3,7 @@ import db from "../database/dataConnection.js";
 import logger from "../support/logging.js"
 import StatsD from "node-statsd";
 
-const  statsd = new StatsD({ host: config.database.statsdhost, port: config.database.statsdPort });
+const  statsd = new StatsD({ host: config.dbC.statsdhost, port: config.dbC.statsdPort });
 //create
 export const post = async (request, response) => {
     statsd.increment("endpoint.post.post");
