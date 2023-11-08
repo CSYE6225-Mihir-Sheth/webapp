@@ -14,7 +14,6 @@ export const createAssignment = async(request, response) => {
 
 }
 
-
 //delete
 export async function deleteAssignment(assignmentId) {
   return db.Assignment.destroy({ where: { id: assignmentId }}); 
