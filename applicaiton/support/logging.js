@@ -5,7 +5,6 @@ const webappLogger = createLogger({
   transports: [
     new transports.File({
       filename: 'webapp.log',
-      level: 'info',
     }),
   ],
 });

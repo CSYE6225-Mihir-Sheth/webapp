@@ -15,12 +15,11 @@ sudo mv /home/admin/users.csv /opt/csye6225/users.csv
 sudo mv /home/admin/cloudwatch-config.json /opt/csye6225/cloudwatch-config.json
 sudo npm i
 sudo cp /home/admin/app.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable app.service
-sudo systemctl start app.service
 
 sudo wget https://amazoncloudwatch-agent.s3.amazonaws.com/debian/amd64/latest/amazon-cloudwatch-agent.deb
 sudo dpkg -i -E ./amazon-cloudwatch-agent.deb
-
+sudo systemctl daemon-reload
+sudo systemctl enable app.service
+sudo systemctl start app.service
 sudo systemctl enable amazon-cloudwatch-agent
 sudo systemctl start amazon-cloudwatch-agent
