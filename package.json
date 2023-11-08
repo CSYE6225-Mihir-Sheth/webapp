@@ -18,9 +18,11 @@
     "express": "^4.18.2",
     "logger": "^0.0.1",
     "mysql2": "^3.6.1",
+    "node-statsd": "^0.1.1",
     "pg": "^8.11.3",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.33.0",
+    "statsd-client": "^0.4.7",
     "supertest": "^6.3.3",
     "winston": "^3.11.0"
   },
