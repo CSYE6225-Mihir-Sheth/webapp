@@ -55,5 +55,3 @@ const assignmentModel = (sequelize) => {
 }
 
 export default assignmentModel;
-
-////.
