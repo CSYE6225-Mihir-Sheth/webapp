@@ -10,6 +10,7 @@ function useRegex(input) {
     let regex = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?([Zz])$/;
     return regex.test(input);
 }
+
 //create
 export const post = async (request, response) => {
     statsd.increment("endpoint.post.post");
