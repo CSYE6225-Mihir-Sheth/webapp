@@ -35,6 +35,7 @@ export async function deleteAssignment(assignmentId) {
 // }
 
 //update
+//
 
 export const updateAssignmentDetails = async (id, newDetails) => {
 
