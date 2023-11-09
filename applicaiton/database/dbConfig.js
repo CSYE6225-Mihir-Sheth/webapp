@@ -10,7 +10,9 @@ export default {
     password: process.env.password,
     database: process.env.database,
     dialect: 'mysql',
-    port: process.env.port
+    port: process.env.port,
+    statsdhost: process.env.statsdhost, 
+    statsdPort: process.env.statsdPort
   },
 };
 //

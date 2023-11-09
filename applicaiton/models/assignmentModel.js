@@ -1,5 +1,7 @@
 import { DataTypes, UUIDV4 } from "sequelize";
 
+//
+
 const assignmentModel = (sequelize) => {
     let Assignment = sequelize.define('assignment', {
         id: {

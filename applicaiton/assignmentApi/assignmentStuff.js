@@ -14,7 +14,6 @@ export const createAssignment = async(request, response) => {
 
 }
 
-
 //delete
 export async function deleteAssignment(assignmentId) {
   return db.Assignment.destroy({ where: { id: assignmentId }}); 
@@ -36,6 +35,7 @@ export async function deleteAssignment(assignmentId) {
 // }
 
 //update
+//
 
 export const updateAssignmentDetails = async (id, newDetails) => {
 
