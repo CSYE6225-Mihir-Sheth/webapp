@@ -6,7 +6,7 @@ import config from "../database/dbConfig.js";
 
 const  statsd = new StatsD({ host: config.dbC.statsdhost, port: config.dbC.statsdPort });
 
-function useRegex(input) {
+function checkDate(input) {
     let regex = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?([Zz])$/;
     return regex.test(input);
 }
@@ -62,10 +62,6 @@ export const post = async (request, response) => {
         if(!checkDate(newDetails.deadline)){
             logger.warn("Bad request: Invalid body parameters");
             return response.status(400).json({error: 'Bad Request'}).send();
-        }
-        if(!useRegex(newDetails.deadline)){
-            logger.warn("Bad request: Invalid deadline format");
-            return response.status(400).json({error: 'Bad Request: Invalid deadline format'});
         }
         if(!newDetails.name || !newDetails.points || !newDetails.num_of_attempts || !newDetails.deadline || Object.keys(newDetails).length > 4){
             logger.warn("Bad request: Invalid body parameters");
@@ -160,10 +156,6 @@ export const put = async (request, response) => {
         if(!checkDate(newDetails.deadline)){
             logger.warn("Bad request: Invalid body parameters");
             return response.status(400).json({error: 'Bad Request'}).send();
-        }
-        if(!useRegex(newDetails.deadline)){
-            logger.warn("Bad request: Invalid deadline format");
-            return response.status(400).json({error: 'Bad Request: Invalid deadline format'});
         }
         if(!newDetails.name || !newDetails.points || !newDetails.num_of_attempts || !newDetails.deadline || Object.keys(newDetails).length > 4){
             logger.warn("Bad request: Invalid body parameters");
