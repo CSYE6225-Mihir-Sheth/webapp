@@ -50,23 +50,23 @@ export const post = async (request, response) => {
 
         const newDetails = request.body;
         
-        if(!Number.isInteger(points) || !Number.isInteger(num_of_attempts)){
+        if(!Number.isInteger(newDetails.points) || !Number.isInteger(newDetails.num_of_attempts)){
             logger.warn("Bad request: Invalid body parameters");
             return res.status(400).json({error: 'Bad Request'}).send();
         }
-        if (!(typeof req.body.name === 'string' || req.body.name instanceof String)){
+        if (!(typeof newDetails.name === 'string' || newDetails.name instanceof String)){
             logger.warn("Bad request: Invalid body parameters");
             return res.status(400).json({error: 'Bad Request'}).send();
         }
-        if(!checkDate(deadline)){
+        if(!checkDate(newDetails.deadline)){
             logger.warn("Bad request: Invalid body parameters");
             return res.status(400).json({error: 'Bad Request'}).send();
         }
-        if(!useRegex(deadline)){
+        if(!useRegex(newDetails.deadline)){
             logger.warn("Bad request: Invalid deadline format");
             return response.status(400).json({error: 'Bad Request: Invalid deadline format'});
         }
-        if(!req.body.name || !points || !num_of_attempts || !deadline || Object.keys(req.body).length > 4){
+        if(!newDetails.name || !newDetails.points || !newDetails.num_of_attempts || !newDetails.deadline || Object.keys(newDetails).length > 4){
             logger.warn("Bad request: Invalid body parameters");
             return res.status(400).json({error: 'Bad Request'}).send();
         }
@@ -147,23 +147,24 @@ export const put = async (request, response) => {
         const id = request.params.id;
         let newDetails = request.body;
 
-        if(!Number.isInteger(points) || !Number.isInteger(num_of_attempts)){
+        
+        if(!Number.isInteger(newDetails.points) || !Number.isInteger(newDetails.num_of_attempts)){
             logger.warn("Bad request: Invalid body parameters");
             return res.status(400).json({error: 'Bad Request'}).send();
         }
-        if (!(typeof req.body.name === 'string' || req.body.name instanceof String)){
+        if (!(typeof newDetails.name === 'string' || newDetails.name instanceof String)){
             logger.warn("Bad request: Invalid body parameters");
             return res.status(400).json({error: 'Bad Request'}).send();
         }
-        if(!checkDate(deadline)){
+        if(!checkDate(newDetails.deadline)){
             logger.warn("Bad request: Invalid body parameters");
             return res.status(400).json({error: 'Bad Request'}).send();
         }
-        if(!useRegex(deadline)){
+        if(!useRegex(newDetails.deadline)){
             logger.warn("Bad request: Invalid deadline format");
             return response.status(400).json({error: 'Bad Request: Invalid deadline format'});
         }
-        if(!req.body.name || !points || !num_of_attempts || !deadline || Object.keys(req.body).length > 4){
+        if(!newDetails.name || !newDetails.points || !newDetails.num_of_attempts || !newDetails.deadline || Object.keys(newDetails).length > 4){
             logger.warn("Bad request: Invalid body parameters");
             return res.status(400).json({error: 'Bad Request'}).send();
         }
