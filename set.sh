@@ -13,6 +13,10 @@ cd /opt/csye6225
 sudo unzip -o webapp.zip
 sudo mv /home/admin/users.csv /opt/csye6225/users.csv
 sudo mv /home/admin/cloudwatch-config.json /opt/csye6225/cloudwatch-config.json
+sudo chown -R csye6225 /opt/csye6225
+sudo chgrp -R csye6225 /opt/csye6225
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/csye6225/cloudwatch-config.json -s
+cd /opt/csye6225
 sudo npm i
 sudo cp /home/admin/app.service /etc/systemd/system/
 
