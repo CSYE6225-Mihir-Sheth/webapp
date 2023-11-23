@@ -1,4 +1,4 @@
-import { authenticateUser, createAssignment, removeAssignment, updateAssignment, getAllAssignments, getAssignmentById, healthCheck} from "../support/assignmentService.js";
+import { authenticateUser, createAssignment, removeAssignment, updateAssignment, getAllAssignments, getAssignmentById, healthCheck, createSubmission} from "../support/assignmentService.js";
 import db from "../database/dataConnection.js";
 import logger from "../support/logging.js"
 import StatsD from "node-statsd";
@@ -417,6 +417,111 @@ export const getAssignmentUsingId = async (request, response) => {
         return response.status(400).send('Bad Request'); // Other errors (e.g. malformed request)
     }
 };
+
+//Submission API
+
+export const createsub = async (request, response) => {
+    statsd.increment("endpoint.post.createsub");
+    try {
+
+        if (Object.keys(request.body).length === 0) {
+            logger.warn('Request body should not be empty, sending 400');
+            return response.status(400).send('Request body should not be empty.');
+        }
+
+        const health = await healthCheck();
+        if (health !== true) {
+            logger.warn('Health check failed, sending 503');
+            return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate').send('');
+        }
+
+        const authHeader = request.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Basic ')) {
+            logger.warn('Authorization header missing or not Basic, sending 401');
+            return response.status(401).send('Unauthorized'); // No auth header or malformed auth header
+        }
+
+        const base64Credentials = authHeader.split(' ')[1];
+        const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+        const [email, password] = credentials.split(':');
+
+        const authenticated = await authenticateUser(email, password);
+        if (!authenticated) {
+            logger.warn('User authentication failed, sending 401');
+            return response.status(401).send('Invalid credentials');
+        }
+
+        // Extract submission details from request body
+        const assignment_id = request.params.id; // corresponds to the {id} in my route "/v1/assignments/{id}/submission"
+        const { submission_url } = request.body;
+
+        //zip validation 
+
+        const githubZipUrlRegex = /^https:\/\/github\.com\/.+\/.+\/archive\/refs\/tags\/v\d+\.\d+\.\d+\.zip$/;
+        if (!githubZipUrlRegex.test(submission_url)) {
+            logger.warn('Invalid submission URL format, sending 400');
+            return response.status(400).send('Invalid submission URL format');
+        }
+
+        // Fetch the assignment to check for the deadline and number of attempts
+        const assignment = await db.assignment.findByPk(request.params.id);
+        if (!assignment) {
+            logger.warn('Assignment not found, sending 404');
+            return response.status(404).send('Assignment not found');
+        }
+
+        // Check if the submission deadline has passed
+        const deadline = new Date(assignment.deadline);
+        if (deadline < new Date()) {
+            logger.warn('Submission deadline has passed, sending 400');
+            return response.status(400).send('Submission deadline has passed');
+        }
+
+        // Check the number of submissions made by the user for this assignment
+        const submissionsCount = await db.submission.count({
+            where: { 
+                assignment_id: request.params.id, 
+                user_id: authenticated 
+            }
+        });
+        
+
+        if (submissionsCount >= assignment.num_of_attempts) {
+            logger.warn('Number of submission attempts exceeded, sending 400');
+            return response.status(400).send('Number of submission attempts exceeded');
+        }
+
+        // Create the submission if all checks pass
+        const newSubmission = await createSubmission(submissionDetails);
+        if (!newSubmission) {
+            logger.error('Failed to create submission, sending 400');
+            return response.status(500).send('Internal Server Error: Failed to create submission.');
+        }
+
+        if (!newSubmission) {
+            logger.error('Failed to create submission, sending 500');
+            return response.status(500).send('Internal Server Error: Failed to create submission.');
+        }
+
+        // Construct the response object with renamed fields
+        const submissionResponse = {
+        id: newSubmission.id, // Preserve the submission's unique ID
+        assignment_id: newSubmission.assignment_id, // Use assignment_id from the model
+        submission_url: newSubmission.submission_url,
+        submission_date: newSubmission.submission_date || new Date().toISOString(),
+        submission_updated: newSubmission.submission_updated || new Date().toISOString()
+        };
+
+        logger.info(`Submission for assignment ID ${assignment_id} created successfully`);
+        return response.status(201).send(submissionResponse);
+
+    } catch (error) {
+        logger.error(`An error occurred while creating submission: ${error.message}, sending 400`);
+        return response.status(400).send('Bad Request');
+    }
+};
+
+
 
 // PATCH
 export const patch = (request, response) => {

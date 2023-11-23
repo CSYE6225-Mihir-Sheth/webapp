@@ -10,7 +10,8 @@ const {
   head, 
   options, 
   get, 
-  getAssignmentUsingId 
+  getAssignmentUsingId,
+  createSubmission
 } = assignmentController;
 
 const assignmentRouter = express.Router();
@@ -33,6 +34,10 @@ assignmentRouter
   .patch(patch)
   .head(head)
   .options(options);
+
+assignmentRouter
+  .route('/v1/Assignments/:id/submission')
+  .post(assignmentController.createsub);
 //
 // assignmentRouter
 //   .route('/healthz')

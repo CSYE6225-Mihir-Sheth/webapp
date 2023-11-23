@@ -94,7 +94,16 @@ export const removeAssignment = async (id) => {
       where: { id },
   });
 }
-
+//Create a submission
+export async function createSubmission(data) {
+  try {
+    const submission = await db.submission.create(data);
+    return submission;
+  } catch (error) {
+    console.error('Error creating submission', error);
+    throw error;
+  }
+}
 
 
 /**
