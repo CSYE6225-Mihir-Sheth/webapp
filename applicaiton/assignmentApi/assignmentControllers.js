@@ -420,8 +420,8 @@ export const getAssignmentUsingId = async (request, response) => {
 
 //Submission API
 
-export const createSubmission = async (request, response) => {
-    statsd.increment("endpoint.post.createSubmission");
+export const createsub = async (request, response) => {
+    statsd.increment("endpoint.post.createsub");
     try {
 
         if (Object.keys(request.body).length === 0) {
@@ -492,11 +492,11 @@ export const createSubmission = async (request, response) => {
         }
 
         // Create the submission if all checks pass
-        const newSubmission = await db.submission.create({
-            assignment_id: request.params.id,
-            submission_url,
-            user_id: authenticated 
-        });
+        const newSubmission = await createSubmission(submissionDetails);
+        if (!newSubmission) {
+            logger.error('Failed to create submission, sending 400');
+            return response.status(500).send('Internal Server Error: Failed to create submission.');
+        }
 
         if (!newSubmission) {
             logger.error('Failed to create submission, sending 500');
