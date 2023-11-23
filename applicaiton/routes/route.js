@@ -37,7 +37,7 @@ assignmentRouter
 
 assignmentRouter
   .route('/v1/Assignments/:id/submission')
-  .post(createSubmission);
+  .post(assignmentController.createsub);
 //
 // assignmentRouter
 //   .route('/healthz')
