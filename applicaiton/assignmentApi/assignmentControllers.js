@@ -464,7 +464,7 @@ export const createsub = async (request, response) => {
         }
 
         // Fetch the assignment to check for the deadline and number of attempts
-        const assignment = await db.assignment.findByPk(request.params.id);
+        const assignment = await db.assignment.findOne({ where: { assignment_id: request.params.id } });
         if (!assignment) {
             logger.warn('Assignment not found, sending 404');
             return response.status(404).send('Assignment not found');
