@@ -523,6 +523,7 @@ export const createsub = async (request, response) => {
         return response.status(400).send('Bad Request');
     }
 };
+const user_id = await db.user.findOne({ where: { id: authenticateUser } });
 
      //sns
    const sns = new AWS.SNS();
