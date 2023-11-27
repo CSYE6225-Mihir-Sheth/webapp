@@ -516,7 +516,7 @@ export const createsub = async (request, response) => {
         const topicArn = `arn:aws:sns:us-east-1:758550740954:submitAssignment`;
         sns.publish({
             TopicArn: topicArn,
-            Message: `Submission from ${email} for assignment ID ${newDetails.assignment_id}`,
+            Message: `Submission from ${user_id.email.id}`,
         }, (err, data) => {
             if (err) {
                 logger.error("Error publishing to the SNS", err);
