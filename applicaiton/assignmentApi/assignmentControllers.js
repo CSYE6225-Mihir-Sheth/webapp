@@ -534,7 +534,6 @@ export const createsub = async (request, response) => {
         return response.status(400).send('Bad Request');
     }
 };
-
 // GET
 
 
