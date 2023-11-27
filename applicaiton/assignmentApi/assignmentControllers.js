@@ -488,7 +488,6 @@ export const createsub = async (request, response) => {
             }
         });
 
-        const user_id = await db.user.findOne({ where: { id: authenticated } });
 
         console.log("jfhgxfdxhfxfg", submissionsCount)
         if (submissionsCount >= assignment.num_of_attempts) {
@@ -500,9 +499,9 @@ export const createsub = async (request, response) => {
         // const newSubmission = await createSubmission(submissionDetails);
         
 
-        // Construct the response object with renamed fields
+        // Create the submission if all checks pass
         newDetails.assignment_id = request.params.id;
-        newDetails.user_id = authenticated;// Use assignment_id from the model
+        newDetails.user_id = authenticated;
         newDetails.submission_date = new Date().toISOString();
         newDetails.submission_updated = new Date().toISOString();
         const newSubmission = await createSubmission(newDetails);
@@ -511,40 +510,30 @@ export const createsub = async (request, response) => {
             return response.status(500).send('Internal Server Error: Failed to create submission.');
         }
 
-        if (!newSubmission) {
-            logger.error('Failed to create submission, sending 500');
-            return response.status(500).send('Internal Server Error: Failed to create submission.');
-        }
+        // Send SNS Notification
+        const sns = new AWS.SNS();
+        AWS.config.update({ region: 'us-east-1' });
+        const topicArn = `arn:aws:sns:us-east-1:758550740954:submitAssignment`;
+        sns.publish({
+            TopicArn: topicArn,
+            Message: `Submission from ${email} for assignment ID ${newDetails.assignment_id}`,
+        }, (err, data) => {
+            if (err) {
+                logger.error("Error publishing to the SNS", err);
+                return response.status(500).send("Error submitting.");
+            } else {
+                logger.info("SNS published successfully");
+            }
+        });
 
         logger.info(`Submission for assignment ID ${newDetails.assignment_id} created successfully`);
         return response.status(201).send(newSubmission);
-        
 
     } catch (error) {
         logger.error(`An error occurred while creating submission: ${error.message}, sending 400`);
         return response.status(400).send('Bad Request');
-
     }
 };
-
-     //sns
-   const sns = new AWS.SNS();
-   AWS.config.update({ region: 'us-east-1' });
-   const topicArn = `arn:aws:sns::us-east-1:758550740954:submitAssignment`;
-   sns.publish({
-    TopicArn: topicArn,
-    Message: `Submission from ${user_id.email.id}`,
-    }, (err, data) => {
-        if (err) {
-            logger.error("Error publishing it to the SNS", err);
-            return response.status(500).send("Error submitting.");
-            } else{
-                logger.info("SNS published successfully");
-                return response.status(200).send("SNS published successfully");
-            
-        }
-    }
-    );
 
 // GET
 
