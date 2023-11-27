@@ -488,6 +488,8 @@ export const createsub = async (request, response) => {
             }
         });
 
+        const user_id = await db.user.findOne({ where: { id: authenticated } });
+
         console.log("jfhgxfdxhfxfg", submissionsCount)
         if (submissionsCount >= assignment.num_of_attempts) {
             logger.warn('Number of submission attempts exceeded, sending 400');
@@ -521,9 +523,9 @@ export const createsub = async (request, response) => {
     } catch (error) {
         logger.error(`An error occurred while creating submission: ${error.message}, sending 400`);
         return response.status(400).send('Bad Request');
+
     }
 };
-const user_id = await db.user.findOne({ where: { id: authenticated } });
 
      //sns
    const sns = new AWS.SNS();
