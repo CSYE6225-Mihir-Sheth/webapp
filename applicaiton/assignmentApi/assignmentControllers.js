@@ -524,7 +524,7 @@ export const createsub = async (request, response) => {
 };
 
      //sns
-   const sns =new AWS.SNS();
+   const sns = new AWS.SNS();
    sns.publish({
     TopicArn: config.database.TopicArn,
     Message: `Submission from ${user_id.email.id}`,
