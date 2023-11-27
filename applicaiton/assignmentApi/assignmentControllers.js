@@ -3,6 +3,7 @@ import db from "../database/dataConnection.js";
 import logger from "../support/logging.js"
 import StatsD from "node-statsd";
 import config from "../database/dbConfig.js";
+import AWS from 'aws-sdk';
 
 const statsd = new StatsD({ host: config.dbC.statsdhost, port: config.dbC.statsdPort });
 
@@ -525,6 +526,7 @@ export const createsub = async (request, response) => {
 
      //sns
    const sns = new AWS.SNS();
+   AWS.config.update({ region: 'us-east-1' });
    sns.publish({
     TopicArn: config.database.TopicArn,
     Message: `Submission from ${user_id.email.id}`,
