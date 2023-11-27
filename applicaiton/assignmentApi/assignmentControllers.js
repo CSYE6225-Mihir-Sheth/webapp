@@ -1,10 +1,11 @@
-import { authenticateUser, createAssignment, removeAssignment, updateAssignment, getAllAssignments, getAssignmentById, healthCheck, createSubmission} from "../support/assignmentService.js";
+import { authenticateUser, createAssignment, removeAssignment, updateAssignment, getAllAssignments, getAssignmentById, healthCheck, createSubmission } from "../support/assignmentService.js";
 import db from "../database/dataConnection.js";
 import logger from "../support/logging.js"
 import StatsD from "node-statsd";
 import config from "../database/dbConfig.js";
+import AWS from 'aws-sdk';
 
-const  statsd = new StatsD({ host: config.dbC.statsdhost, port: config.dbC.statsdPort });
+const statsd = new StatsD({ host: config.dbC.statsdhost, port: config.dbC.statsdPort });
 
 function checkDate(input) {
     let regex = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?([Zz])$/;
@@ -18,9 +19,9 @@ export const post = async (request, response) => {
         const health = await healthCheck();
         if (health !== true) {
             logger.warn('Health check failed, sending 503');
-            return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate' ).send('');
+            return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate').send('');
         }
-        
+
         const authHeader = request.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Basic ')) {
             logger.warn('Authorization header missing or not Basic, sending 401');
@@ -37,7 +38,7 @@ export const post = async (request, response) => {
         }
 
         const checkForDuplicateKeysInRawBody = (rawBody) => {
-            const keys = (rawBody.match(/"(\w+)":/g) || []).map(key => key.slice(1, -2)); 
+            const keys = (rawBody.match(/"(\w+)":/g) || []).map(key => key.slice(1, -2));
             return keys.length !== [...new Set(keys)].length;
         };
 
@@ -50,25 +51,25 @@ export const post = async (request, response) => {
         ];
 
         const newDetails = request.body;
-        
-        if(!Number.isInteger(newDetails.points) || !Number.isInteger(newDetails.num_of_attempts)){
+
+        if (!Number.isInteger(newDetails.points) || !Number.isInteger(newDetails.num_of_attempts)) {
             logger.warn("Bad request: Invalid body parameters");
-            return response.status(400).json({error: 'Bad Request'}).send();
+            return response.status(400).json({ error: 'Bad Request' }).send();
         }
-        if (!(typeof newDetails.name === 'string' || newDetails.name instanceof String)){
+        if (!(typeof newDetails.name === 'string' || newDetails.name instanceof String)) {
             logger.warn("Bad request: Invalid body parameters");
-            return response.status(400).json({error: 'Bad Request'}).send();
+            return response.status(400).json({ error: 'Bad Request' }).send();
         }
-        if(!checkDate(newDetails.deadline)){
+        if (!checkDate(newDetails.deadline)) {
             logger.warn("Bad request: Invalid body parameters");
-            return response.status(400).json({error: 'Bad Request'}).send();
+            return response.status(400).json({ error: 'Bad Request' }).send();
         }
-        if(!newDetails.name || !newDetails.points || !newDetails.num_of_attempts || !newDetails.deadline || Object.keys(newDetails).length > 4){
+        if (!newDetails.name || !newDetails.points || !newDetails.num_of_attempts || !newDetails.deadline || Object.keys(newDetails).length > 4) {
             logger.warn("Bad request: Invalid body parameters");
-            return response.status(400).json({error: 'Bad Request'}).send();
+            return response.status(400).json({ error: 'Bad Request' }).send();
         }
-        
-        
+
+
         // Check for extra parameters or repetitions
         const requestFields = Object.keys(newDetails);
         if (requestFields.length !== requiredFields.length || requestFields.some((field) => !requiredFields.includes(field))) {
@@ -81,11 +82,11 @@ export const post = async (request, response) => {
             logger.warn('Missing fields in request body, sending 400');
             return response.status(400).send('Bad Request: Missing fields in request.');
         }
-        
+
         newDetails.user_id = authenticated;
         newDetails.assignment_created = new Date().toISOString();
         newDetails.assignment_updated = new Date().toISOString();
-        
+
         const savedDetails = await createAssignment(newDetails);
         if (!savedDetails) {
             logger.error('Failed to save assignment details, sending 500');
@@ -144,27 +145,27 @@ export const put = async (request, response) => {
         const id = request.params.id;
         let newDetails = request.body;
 
-        
-        if(!Number.isInteger(newDetails.points) || !Number.isInteger(newDetails.num_of_attempts)){
+
+        if (!Number.isInteger(newDetails.points) || !Number.isInteger(newDetails.num_of_attempts)) {
             logger.warn("Bad request: Invalid body parameters");
-            return response.status(400).json({error: 'Bad Request'}).send();
+            return response.status(400).json({ error: 'Bad Request' }).send();
         }
-        if (!(typeof newDetails.name === 'string' || newDetails.name instanceof String)){
+        if (!(typeof newDetails.name === 'string' || newDetails.name instanceof String)) {
             logger.warn("Bad request: Invalid body parameters");
-            return response.status(400).json({error: 'Bad Request'}).send();
+            return response.status(400).json({ error: 'Bad Request' }).send();
         }
-        if(!checkDate(newDetails.deadline)){
+        if (!checkDate(newDetails.deadline)) {
             logger.warn("Bad request: Invalid body parameters");
-            return response.status(400).json({error: 'Bad Request'}).send();
+            return response.status(400).json({ error: 'Bad Request' }).send();
         }
-        if(!newDetails.name || !newDetails.points || !newDetails.num_of_attempts || !newDetails.deadline || Object.keys(newDetails).length > 4){
+        if (!newDetails.name || !newDetails.points || !newDetails.num_of_attempts || !newDetails.deadline || Object.keys(newDetails).length > 4) {
             logger.warn("Bad request: Invalid body parameters");
-            return response.status(400).json({error: 'Bad Request'}).send();
+            return response.status(400).json({ error: 'Bad Request' }).send();
         }
 
         newDetails.assignment_updated = new Date().toISOString();
 
-    
+
 
         const updatedDetails = await updateAssignment(newDetails, id);
         if (!updatedDetails) {
@@ -202,7 +203,7 @@ export const put = async (request, response) => {
 //         if (authenticated === null) {
 //             return response.status(401).send('');
 //         }
-        
+
 //         const assignment = await db.assignment.findOne({ where: { id: request.params.id } });
 //         //if condition to be added just see if 
 //         if (assignment.user_id != authenticated ){
@@ -226,12 +227,12 @@ export const remove = async (request, response) => {
         if (Object.keys(request.body).length !== 0) {
             logger.warn('Request body should be empty, sending 400');
             return response.status(400).send('Request body should be empty.');
-            }
+        }
 
         const health = await healthCheck();
         if (health !== true) {
             logger.warn('Health check failed, sending 503');
-            return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate' ).send('');
+            return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate').send('');
         }
         const authHeader = request.headers.authorization;
 
@@ -250,9 +251,9 @@ export const remove = async (request, response) => {
             logger.warn('User authentication failed, sending 401');
             return response.status(401).send('');
         }
-        
+
         const assignment = await db.assignment.findOne({ where: { id: request.params.id } });
-//
+        //
         // If no assignment found, send 404
         if (!assignment) {
             logger.error('Assignment not found, sending 404');
@@ -278,17 +279,17 @@ export const remove = async (request, response) => {
 
 export const get = async (request, response) => {
     statsd.increment("endpoint.get.get");
-    try{
+    try {
 
-    if (Object.keys(request.body).length !== 0) {
-        logger.warn('Request body should be empty, sending 400');
-        return response.status(400).send('Request body should be empty.');
+        if (Object.keys(request.body).length !== 0) {
+            logger.warn('Request body should be empty, sending 400');
+            return response.status(400).send('Request body should be empty.');
         }
-    const health = await healthCheck();
-    if (health !== true) {
-        logger.warn('Health check failed, sending 503');
-        return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate' ).send('');          
-    }
+        const health = await healthCheck();
+        if (health !== true) {
+            logger.warn('Health check failed, sending 503');
+            return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate').send('');
+        }
         const authHeader = request.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith('Basic ')) {
@@ -301,26 +302,26 @@ export const get = async (request, response) => {
         const [email, password] = credentials.split(':');
 
         const authenticated = await authenticateUser(email, password);
-        
+
         if (authenticated === null) {
             logger.warn('User authentication failed, sending 401');
             return response.status(401).send('');
         }
-        
+
         const assignments = await getAllAssignments(authenticated);
-        
+
         if (assignments.length === 0) {
             logger.info('No assignments found for the user, sending 200 with empty array');
-                // Handle the case when no assignments are found for the user
+            // Handle the case when no assignments are found for the user
             return response.status(200).send('');
-       } else {
+        } else {
             logger.info('Assignments retrieved successfully, sending 200 with data');
-                //Send the assignments as a JSON response
+            //Send the assignments as a JSON response
             return response.status(200).send(assignments);
-            }
-    }   catch (error) {
-            logger.error(`An error occurred while retrieving assignments: ${error.message}, sending 400`);
-            return response.status(400).send('');
+        }
+    } catch (error) {
+        logger.error(`An error occurred while retrieving assignments: ${error.message}, sending 400`);
+        return response.status(400).send('');
     }
 };
 //get Assignments by id
@@ -330,7 +331,7 @@ export const get = async (request, response) => {
 //     if (health !== true) {
 //         return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate' ).send('');          
 //         }
-    
+
 //         const authHeader = request.headers.authorization;
 
 //         if (!authHeader || !authHeader.startsWith('Basic ')) {
@@ -377,7 +378,7 @@ export const getAssignmentUsingId = async (request, response) => {
         if (Object.keys(request.body).length !== 0) {
             logger.warn('Request body should be empty, sending 400');
             return response.status(400).send('Request body should be empty.');
-            }
+        }
 
         const health = await healthCheck();
         if (health !== true) {
@@ -424,6 +425,8 @@ export const createsub = async (request, response) => {
     statsd.increment("endpoint.post.createsub");
     try {
 
+        console.log("createSub");
+
         if (Object.keys(request.body).length === 0) {
             logger.warn('Request body should not be empty, sending 400');
             return response.status(400).send('Request body should not be empty.');
@@ -452,8 +455,7 @@ export const createsub = async (request, response) => {
         }
 
         // Extract submission details from request body
-        const assignment_id = request.params.id; // corresponds to the {id} in my route "/v1/assignments/{id}/submission"
-        const { submission_url } = request.body;
+        const newDetails = request.body;
 
         //zip validation 
 
@@ -461,65 +463,79 @@ export const createsub = async (request, response) => {
         if (!githubZipUrlRegex.test(submission_url)) {
             logger.warn('Invalid submission URL format, sending 400');
             return response.status(400).send('Invalid submission URL format');
-        }
+        }   
 
         // Fetch the assignment to check for the deadline and number of attempts
-        const assignment = await db.assignment.findOne({ where: { assignment_id: request.params.id } });
+        console.log("params", request.params.id);
+        const assignment = await db.assignment.findOne({ where: { id: request.params.id } });
         if (!assignment) {
             logger.warn('Assignment not found, sending 404');
             return response.status(404).send('Assignment not found');
         }
 
-        // Check if the submission deadline has passed
+        //Check if the submission deadline has passed
         const deadline = new Date(assignment.deadline);
         if (deadline < new Date()) {
             logger.warn('Submission deadline has passed, sending 400');
-            return response.status(400).send('Submission deadline has passed');
+            return response.status(403).send('Submission deadline has passed');
         }
 
         // Check the number of submissions made by the user for this assignment
         const submissionsCount = await db.submission.count({
-            where: { 
-                assignment_id: request.params.id, 
-                user_id: authenticated 
+            where: {
+                assignment_id: request.params.id,
+                user_id: authenticated
             }
         });
-        
 
+
+        console.log("jfhgxfdxhfxfg", submissionsCount)
         if (submissionsCount >= assignment.num_of_attempts) {
             logger.warn('Number of submission attempts exceeded, sending 400');
             return response.status(400).send('Number of submission attempts exceeded');
         }
 
         // Create the submission if all checks pass
-        const newSubmission = await createSubmission(submissionDetails);
+        // const newSubmission = await createSubmission(submissionDetails);
+        
+
+        // Create the submission if all checks pass
+        newDetails.assignment_id = request.params.id;
+        newDetails.user_id = authenticated;
+        newDetails.submission_date = new Date().toISOString();
+        newDetails.submission_updated = new Date().toISOString();
+        const newSubmission = await createSubmission(newDetails);
         if (!newSubmission) {
             logger.error('Failed to create submission, sending 400');
             return response.status(500).send('Internal Server Error: Failed to create submission.');
         }
 
-        if (!newSubmission) {
-            logger.error('Failed to create submission, sending 500');
-            return response.status(500).send('Internal Server Error: Failed to create submission.');
-        }
+        // Send SNS Notification
+        const sns = new AWS.SNS();
+        AWS.config.update({ region: 'us-east-1' });
+        const topicArn = `arn:aws:sns:us-east-1:758550740954:submitAssignment`;
+        sns.publish({
+            TopicArn: topicArn,
+            Message: `Submission from ${user_id.email.id}`,
+        }, (err, data) => {
+            if (err) {
+                logger.error("Error publishing to the SNS", err);
+                return response.status(500).send("Error submitting.");
+            } else {
+                logger.info("SNS published successfully");
+            }
+        });
 
-        // Construct the response object with renamed fields
-        const submissionResponse = {
-        id: newSubmission.id, // Preserve the submission's unique ID
-        assignment_id: newSubmission.assignment_id, // Use assignment_id from the model
-        submission_url: newSubmission.submission_url,
-        submission_date: newSubmission.submission_date || new Date().toISOString(),
-        submission_updated: newSubmission.submission_updated || new Date().toISOString()
-        };
-
-        logger.info(`Submission for assignment ID ${assignment_id} created successfully`);
-        return response.status(201).send(submissionResponse);
+        logger.info(`Submission for assignment ID ${newDetails.assignment_id} created successfully`);
+        return response.status(201).send(newSubmission);
 
     } catch (error) {
         logger.error(`An error occurred while creating submission: ${error.message}, sending 400`);
         return response.status(400).send('Bad Request');
     }
 };
+// GET
+
 
 
 
@@ -558,7 +574,7 @@ export const healthz = async (request, response) => {
     } else {
         try {
             const health = await healthCheck();
-            if(health === true) {
+            if (health === true) {
                 logger.info('Health check passed, sending 200');
                 return response.status(200).header('Cache-Control', 'no-cache, no-store, must-revalidate').send('');
             } else {
