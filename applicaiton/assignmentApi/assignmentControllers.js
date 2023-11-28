@@ -4,6 +4,8 @@ import logger from "../support/logging.js"
 import StatsD from "node-statsd";
 import config from "../database/dbConfig.js";
 import AWS from 'aws-sdk';
+import validator from 'validator';
+
 
 const statsd = new StatsD({ host: config.dbC.statsdhost, port: config.dbC.statsdPort });
 
@@ -259,6 +261,10 @@ export const remove = async (request, response) => {
             logger.error('Assignment not found, sending 404');
             return response.status(404).send('Assignment not found');
         }
+        const userData = await db.submission.findOne({ where: { id: authenticated } });
+        if (userData.length > 0) {
+            return response.status(400).send('');
+        }
 
         // Check if authenticated user is authorized to delete assignment
         if (assignment.user_id !== authenticated) {
@@ -423,54 +429,56 @@ export const getAssignmentUsingId = async (request, response) => {
 
 export const createsub = async (request, response) => {
     statsd.increment("endpoint.post.createsub");
-    const url = request.body.submission_url;
+    
     try {
-
+ 
         console.log("createSub");
-
-        if ( !url || Object.keys(request.body).length > 1) {
+ 
+        if ( Object.keys(request.body).length == 0) {
             logger.warn('Request body should not be empty, sending 400');
             return response.status(400).send('Request body should not be empty.');
         }
-
-        if (!(typeof url ==='string' || url instanceof String )) {
-            logger.warn('Bad input in the body, sending 400');
-            return response.status(400).send('Request body must be a string');
-        }
-
+ 
         const health = await healthCheck();
         if (health !== true) {
             logger.warn('Health check failed, sending 503');
             return response.status(503).header('Cache-Control', 'no-cache, no store, must-revalidate').send('');
         }
-
+ 
         const authHeader = request.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Basic ')) {
             logger.warn('Authorization header missing or not Basic, sending 401');
             return response.status(401).send('Unauthorized'); // No auth header or malformed auth header
         }
-
+ 
         const base64Credentials = authHeader.split(' ')[1];
         const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
         const [email, password] = credentials.split(':');
-
+ 
         const authenticated = await authenticateUser(email, password);
         if (!authenticated) {
             logger.warn('User authentication failed, sending 401');
             return response.status(401).send('Invalid credentials');
         }
 
-        // Extract submission details from request body
         const newDetails = request.body;
-
-        //zip validation 
-
-        const githubZipUrlRegex = /^https:\/\/github\.com\/.+\/.+\/archive\/refs\/tags\/v\d+\.\d+\.\d+\.zip$/;
-        if (!githubZipUrlRegex.test(url)) {
-            logger.warn('Invalid submission URL format, sending 400');
-            return response.status(400).send('Invalid submission URL format');
-        }   
-
+        const user_id = await db.user.findOne({ where: { id: authenticated } });
+        if (!validator.isURL(newDetails.submission_url)) {
+            logger.warn("Submission API Invalid URL.");
+            return response.status(400).send("Invalid submission URL.");
+        }
+    
+        // Extract submission details from request body
+       
+ 
+        //zip validation
+ 
+        // const githubZipUrlRegex = /^https:\/\/github\.com\/.+\/.+\/archive\/refs\/tags\/v\d+\.\d+\.\d+\.zip$/;
+        // if (!githubZipUrlRegex.test(submission_url)) {
+        //     logger.warn('Invalid submission URL format, sending 400');
+        //     return response.status(400).send('Invalid submission URL format');
+        // }  
+ 
         // Fetch the assignment to check for the deadline and number of attempts
         console.log("params", request.params.id);
         const assignment = await db.assignment.findOne({ where: { id: request.params.id } });
@@ -478,14 +486,14 @@ export const createsub = async (request, response) => {
             logger.warn('Assignment not found, sending 404');
             return response.status(404).send('Assignment not found');
         }
-
+ 
         //Check if the submission deadline has passed
         const deadline = new Date(assignment.deadline);
         if (deadline < new Date()) {
             logger.warn('Submission deadline has passed, sending 400');
             return response.status(403).send('Submission deadline has passed');
         }
-
+ 
         // Check the number of submissions made by the user for this assignment
         const submissionsCount = await db.submission.count({
             where: {
@@ -493,18 +501,18 @@ export const createsub = async (request, response) => {
                 user_id: authenticated
             }
         });
-
-
+ 
+ 
         console.log("jfhgxfdxhfxfg", submissionsCount)
         if (submissionsCount >= assignment.num_of_attempts) {
             logger.warn('Number of submission attempts exceeded, sending 403');
             return response.status(403).send('Number of submission attempts exceeded');
         }
-
+ 
         // Create the submission if all checks pass
         // const newSubmission = await createSubmission(submissionDetails);
         
-
+ 
         // Create the submission if all checks pass
         newDetails.assignment_id = request.params.id;
         newDetails.user_id = authenticated;
@@ -515,28 +523,33 @@ export const createsub = async (request, response) => {
             logger.error('Failed to create submission, sending 400');
             return response.status(400).send('Internal Server Error: Failed to create submission.');
         }
-
+ 
         // Send SNS Notification
         const sns = new AWS.SNS();
         AWS.config.update({ region: 'us-east-1' });
-        const topicArn = `arn:aws:sns:us-east-1:758550740954:submitAssignment`;
+        const topicArn = `config.dbC.TopicArn`;
         sns.publish({
             TopicArn: topicArn,
-            Message: `Submission from ${user_id.email.id}`,
+            Message: `Submission from ${user_id.emailid}`,
         }, (err, data) => {
             if (err) {
+                console.log("ygy", err);
                 logger.error("Error publishing to the SNS", err);
                 return response.status(500).send("Error submitting.");
             } else {
                 logger.info("SNS published successfully",data);
-                return response.status(204).send(newSubmission);
+                return response.status(201).send(newSubmission);
             }
         });
     } catch (error) {
+        
+        console.log("11", error)
         logger.error(`An error occurred while creating submission: ${error.message}, sending 400`);
         return response.status(400).send('Bad Request');
+
     }
 };
+
 // GET
 
 

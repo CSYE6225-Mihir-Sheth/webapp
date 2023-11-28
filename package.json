@@ -25,6 +25,7 @@
     "sequelize": "^6.33.0",
     "statsd-client": "^0.4.7",
     "supertest": "^6.3.3",
+    "validator": "^13.11.0",
     "winston": "^3.11.0"
   },
   "devDependencies": {
