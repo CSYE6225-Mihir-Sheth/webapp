@@ -423,13 +423,19 @@ export const getAssignmentUsingId = async (request, response) => {
 
 export const createsub = async (request, response) => {
     statsd.increment("endpoint.post.createsub");
+    const url = request.body.submission_url;
     try {
 
         console.log("createSub");
 
-        if (Object.keys(request.body).length === 0) {
+        if ( !url || Object.keys(request.body).length > 1) {
             logger.warn('Request body should not be empty, sending 400');
             return response.status(400).send('Request body should not be empty.');
+        }
+
+        if (!(typeof url ==='string' || url instanceof String )) {
+            logger.warn('Bad input in the body, sending 400');
+            return response.status(400).send('Request body must be a string');
         }
 
         const health = await healthCheck();
@@ -491,8 +497,8 @@ export const createsub = async (request, response) => {
 
         console.log("jfhgxfdxhfxfg", submissionsCount)
         if (submissionsCount >= assignment.num_of_attempts) {
-            logger.warn('Number of submission attempts exceeded, sending 400');
-            return response.status(400).send('Number of submission attempts exceeded');
+            logger.warn('Number of submission attempts exceeded, sending 403');
+            return response.status(403).send('Number of submission attempts exceeded');
         }
 
         // Create the submission if all checks pass
@@ -507,7 +513,7 @@ export const createsub = async (request, response) => {
         const newSubmission = await createSubmission(newDetails);
         if (!newSubmission) {
             logger.error('Failed to create submission, sending 400');
-            return response.status(500).send('Internal Server Error: Failed to create submission.');
+            return response.status(400).send('Internal Server Error: Failed to create submission.');
         }
 
         // Send SNS Notification
@@ -522,13 +528,10 @@ export const createsub = async (request, response) => {
                 logger.error("Error publishing to the SNS", err);
                 return response.status(500).send("Error submitting.");
             } else {
-                logger.info("SNS published successfully");
+                logger.info("SNS published successfully",data);
+                return response.status(204).send(newSubmission);
             }
         });
-
-        logger.info(`Submission for assignment ID ${newDetails.assignment_id} created successfully`);
-        return response.status(201).send(newSubmission);
-
     } catch (error) {
         logger.error(`An error occurred while creating submission: ${error.message}, sending 400`);
         return response.status(400).send('Bad Request');
