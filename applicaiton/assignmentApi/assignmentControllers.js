@@ -466,7 +466,7 @@ export const createsub = async (request, response) => {
         //zip validation 
 
         const githubZipUrlRegex = /^https:\/\/github\.com\/.+\/.+\/archive\/refs\/tags\/v\d+\.\d+\.\d+\.zip$/;
-        if (!githubZipUrlRegex.test(submission_url)) {
+        if (!githubZipUrlRegex.test(url)) {
             logger.warn('Invalid submission URL format, sending 400');
             return response.status(400).send('Invalid submission URL format');
         }   
