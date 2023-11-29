@@ -527,7 +527,7 @@ export const createsub = async (request, response) => {
         // Send SNS Notification
         const sns = new AWS.SNS();
         AWS.config.update({ region: 'us-east-1' });
-        const TopicArn = `config.dbC.TopicArn`;
+        const TopicArn = config.dbC.TopicArn;
         sns.publish({
             TopicArn: TopicArn,
             Message: `Submission from ${user_id.emailid}`,
