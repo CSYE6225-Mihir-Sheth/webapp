@@ -467,18 +467,14 @@ export const createsub = async (request, response) => {
             logger.warn("Submission API Invalid URL.");
             return response.status(400).send("Invalid submission URL.");
         }
+
+    // Validate URL format
+    if (!validator.isURL(newDetails.submission_url)) {
+        logger.warn("Invalid URL format for submission_url, sending 400.");
+        return response.status(400).send("Invalid URL format for submission_url.");
+    }
     
-        // Extract submission details from request body
-       
- 
-        //zip validation
- 
-        // const githubZipUrlRegex = /^https:\/\/github\.com\/.+\/.+\/archive\/refs\/tags\/v\d+\.\d+\.\d+\.zip$/;
-        // if (!githubZipUrlRegex.test(submission_url)) {
-        //     logger.warn('Invalid submission URL format, sending 400');
-        //     return response.status(400).send('Invalid submission URL format');
-        // }  
- 
+
         // Fetch the assignment to check for the deadline and number of attempts
         console.log("params", request.params.id);
         const assignment = await db.assignment.findOne({ where: { id: request.params.id } });
@@ -523,14 +519,22 @@ export const createsub = async (request, response) => {
             logger.error('Failed to create submission, sending 400');
             return response.status(400).send('Internal Server Error: Failed to create submission.');
         }
- 
+        const s_count = submissionsCount+1
+        const msg = {
+            mail_id: email,
+            url: newDetails.submission_url,
+            num_attempts: s_count,
+            assignment_id: assignment.id,
+            assignmentName: assignment.name
+        }
         // Send SNS Notification
         const sns = new AWS.SNS();
         AWS.config.update({ region: 'us-east-1' });
         const TopicArn = config.dbC.TopicArn;
+        //message
         sns.publish({
             TopicArn: TopicArn,
-            Message: `Submission from ${user_id.emailid}`,
+            Message: JSON.stringify(msg),
         }, (err, data) => {
             if (err) {
                 console.log("ygy", err);
@@ -541,15 +545,15 @@ export const createsub = async (request, response) => {
                 return response.status(201).send(newSubmission);
             }
         });
+        //201
     } catch (error) {
         
         console.log("11", error)
         logger.error(`An error occurred while creating submission: ${error.message}, sending 400`);
         return response.status(400).send('Bad Request');
-
+ 
     }
 };
-
 // GET
 
 
