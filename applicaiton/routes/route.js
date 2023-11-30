@@ -10,7 +10,8 @@ const {
   head, 
   options, 
   get, 
-  getAssignmentUsingId 
+  getAssignmentUsingId,
+  createsub
 } = assignmentController;
 
 const assignmentRouter = express.Router();
@@ -33,6 +34,10 @@ assignmentRouter
   .patch(patch)
   .head(head)
   .options(options);
+
+assignmentRouter
+  .route('/Assignments/:id/submission')
+  .post(createsub);
 //
 // assignmentRouter
 //   .route('/healthz')
@@ -40,6 +45,7 @@ assignmentRouter
 
 // Catch-all middleware for 404 response
 assignmentRouter.use((req,res) => {
+  console.log("sf")
     res.status(404).send('');
 });
 
