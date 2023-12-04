@@ -56,7 +56,7 @@ jobs:
           AWS_REGION: ${{ secrets.DEMO_AWS_REGION }}
 
       run: |
-          aws ec2 create-launch-template-version --launch-template-name ${{ secrets.LAUNCH_TEMPLATE }} --instance-20231204064518217000000003 --source-version 1 --launch-template-data '{"ImageId":"${{ env.AMI_ID }}"}'
+          aws ec2 create-launch-template-version --launch-template-name ${{ secrets.LAUNCH_TEMPLATE }} --source-version 1 --launch-template-data '{"ImageId":"${{ env.AMI_ID }}"}'
           echo "Launch template ID completed"
 
     - name: Update Auto Scaling Instances with New Launch Template
