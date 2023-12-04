@@ -36,38 +36,57 @@ jobs:
         ls -la
 
     - name: Run Packer plugin installation
-      run: packer init ./ami.us-east-1.pkr.hcl
+      run: packer init .
+
+    - name: Run Packer plugin installation
+      run: packer init .
       
     - name: Build ami with packer
       run: packer build -var 'MARIA_DB_PASSWORD=${{secrets.PASSWORD}}' -var 'MYSQL_DB=${{secrets.DATABASE}}' -var 'MARIA_DB_USER=${{secrets.USER}}' -var-file=v.pkrvars.hcl ami.us-east-1.pkr.hcl
 
-    - name: Get latest AMI ID
-      id: ami
+    - name: AMI Identifier
       run: |
-        echo "::set-output name=ami_id::$(aws ec2 describe-images --filters 'Name=name,Values=csye6225*' --query 'Images[0].ImageId' --output text)"
-        - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.DEMO_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.DEMO_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.DEMO_AWS_REGION }}
+        echo AMI_ID=$(jq -r '.builds[-1].artifact_id' ./manifest.json | cut -d ":" -f2) >> $GITHUB_ENV
+        shell: bash
 
-    - name: Create Launch Template
-      run: |
-        aws ec2 create-launch-template-version --launch-template-name ${{ secrets.LAUNCH_TEMPLATE }} --source-version 1 --launch-template-data '{"ImageId":"${{ steps.ami.outputs.ami_id }}"}'
+    - name: New Launch Template
+      env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.DEMO_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEMO_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.DEMO_AWS_REGION }}
 
-    - name: Refresh autoscaling group
       run: |
-        aws autoscaling start-instance-refresh --auto-scaling-group-name ${{ secrets.AUTOSCALING_GROUP }}
-        condition=""
-          while [[ $condition != "Successful" && $condition != "Failed" ]]; do
-          condition=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name ${{ secrets.AUTOSCALING_GROUP }} --query 'InstanceRefreshes[0].Status' --output text)
+          aws ec2 create-launch-template-version --launch-template-name ${{ secrets.LAUNCH_TEMPLATE }} --instance-20231204064518217000000003 --source-version 1 --launch-template-data '{"ImageId":"${{ env.AMI_ID }}"}'
+          echo "Launch template ID completed"
+
+    - name: Update Auto Scaling Instances with New Launch Template
+      env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.DEMO_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEMO_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.DEMO_AWS_REGION }}
+      run: |
+          aws autoscaling start-instance-refresh --autoscalinggroup-name ${{ secrets.AUTOSCALING_GROUP }}
+          check_instance_refresh_status() {
+            status=$(aws autoscaling describe-instance-refreshes --autoscalinggroup-name ${{ secrets.AUTOSCALING_GROUP }} --query 'InstanceRefreshes[0].Status' --output text)
+            if [ "$condition" == "Successful" ] || [ "$condition" == "Failed" ] || [ "$condition" == "Cancelled" ]; then
+              return 1
+            else
+              return 0
+            fi
+          }
+
+          # Await completion of the instance refresh process
+          while check_instance_refresh_status; do
+              sleep 30 
+              echo "Awaiting auto scaling group update process"
           done
-          echo "Instance refresh condition: $condition"
-          if [ $condition == "Failed" ]; then
-            echo "Instance refresh failed. Exiting with an error."
-            exit 1
-          fi
 
-    
-
+          condition1=$(aws autoscaling describe-instance-refreshes --autoscalinggroup-name ${{ secrets.AUTOSCALING_GROUP }} --query 'InstanceRefreshes[0].Status' --output text)
+          echo $condition1
+          if [ "$condition1" == "Failed" ] || [ "$status" == "Cancelled" ]; then
+              echo "Instance refresh unsuccessful"
+              exit 1
+            else
+              echo "Instance update successfully executed"
+              exit 0
+            fi
