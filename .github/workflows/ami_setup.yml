@@ -36,10 +36,38 @@ jobs:
         ls -la
 
     - name: Run Packer plugin installation
-      run: packer init .
-
-    - name: Run Packer plugin installation
-      run: packer init .
+      run: packer init ./ami.us-east-1.pkr.hcl
       
     - name: Build ami with packer
       run: packer build -var 'MARIA_DB_PASSWORD=${{secrets.PASSWORD}}' -var 'MYSQL_DB=${{secrets.DATABASE}}' -var 'MARIA_DB_USER=${{secrets.USER}}' -var-file=v.pkrvars.hcl ami.us-east-1.pkr.hcl
+
+    - name: Get latest AMI ID
+      id: ami
+      run: |
+        echo "::set-output name=ami_id::$(aws ec2 describe-images --filters 'Name=name,Values=csye6225*' --query 'Images[0].ImageId' --output text)"
+        - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.DEMO_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.DEMO_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.DEMO_AWS_REGION }}
+
+    - name: Create Launch Template
+      run: |
+        aws ec2 create-launch-template-version --launch-template-name ${{ secrets.LAUNCH_TEMPLATE }} --source-version 1 --launch-template-data '{"ImageId":"${{ steps.ami.outputs.ami_id }}"}'
+
+    - name: Refresh autoscaling group
+      run: |
+        aws autoscaling start-instance-refresh --auto-scaling-group-name ${{ secrets.AUTOSCALING_GROUP }}
+        condition=""
+          while [[ $condition != "Successful" && $condition != "Failed" ]]; do
+          condition=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name ${{ secrets.AUTOSCALING_GROUP }} --query 'InstanceRefreshes[0].Status' --output text)
+          done
+          echo "Instance refresh condition: $condition"
+          if [ $condition == "Failed" ]; then
+            echo "Instance refresh failed. Exiting with an error."
+            exit 1
+          fi
+
+    
+
