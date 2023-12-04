@@ -47,7 +47,7 @@ jobs:
     - name: AMI Identifier
       run: |
         echo AMI_ID=$(jq -r '.builds[-1].artifact_id' ./manifest.json | cut -d ":" -f2) >> $GITHUB_ENV
-        shell: bash
+      shell: bash
 
     - name: New Launch Template
       env:
