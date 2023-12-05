@@ -67,7 +67,7 @@ jobs:
       run: |
           aws autoscaling start-instance-refresh --auto-scaling-group-name ${{ secrets.AUTOSCALING_GROUP }}
           check_instance_refresh_status() {
-            status=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name ${{ secrets.AUTOSCALING_GROUP }} --query 'InstanceRefreshes[0].Status' --output text)
+            condition=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name ${{ secrets.AUTOSCALING_GROUP }} --query 'InstanceRefreshes[0].Status' --output text)
             if [ "$condition" == "Successful" ] || [ "$condition" == "Failed" ] || [ "$condition" == "Cancelled" ]; then
               return 1
             else
@@ -83,7 +83,7 @@ jobs:
 
           condition1=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name ${{ secrets.AUTOSCALING_GROUP }} --query 'InstanceRefreshes[0].Status' --output text)
           echo $condition1
-          if [ "$condition1" == "Failed" ] || [ "$status" == "Cancelled" ]; then
+          if [ "$condition1" == "Failed" ] || [ "$condition1" == "Cancelled" ]; then
               echo "Instance refresh unsuccessful"
               exit 1
             else
