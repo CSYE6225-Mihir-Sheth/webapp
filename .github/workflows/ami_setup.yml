@@ -43,3 +43,50 @@ jobs:
       
     - name: Build ami with packer
       run: packer build -var 'MARIA_DB_PASSWORD=${{secrets.PASSWORD}}' -var 'MYSQL_DB=${{secrets.DATABASE}}' -var 'MARIA_DB_USER=${{secrets.USER}}' -var-file=v.pkrvars.hcl ami.us-east-1.pkr.hcl
+
+    - name: AMI Identifier
+      run: |
+        echo AMI_ID=$(jq -r '.builds[-1].artifact_id' ./manifest.json | cut -d ":" -f2) >> $GITHUB_ENV
+      shell: bash
+
+    - name: New Launch Template
+      env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.DEMO_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEMO_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.DEMO_AWS_REGION }}
+
+      run: |
+          aws ec2 create-launch-template-version --launch-template-name ${{ secrets.LAUNCH_TEMPLATE }} --source-version 1 --launch-template-data '{"ImageId":"${{ env.AMI_ID }}"}'
+          echo "Launch template ID completed"
+
+    - name: Update Auto Scaling Instances with New Launch Template
+      env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.DEMO_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEMO_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.DEMO_AWS_REGION }}
+      run: |
+          aws autoscaling start-instance-refresh --auto-scaling-group-name ${{ secrets.AUTOSCALING_GROUP }}
+          check_instance_refresh_status() {
+            condition=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name ${{ secrets.AUTOSCALING_GROUP }} --query 'InstanceRefreshes[0].Status' --output text)
+            if [ "$condition" == "Successful" ] || [ "$condition" == "Failed" ] || [ "$condition" == "Cancelled" ]; then
+              return 1
+            else
+              return 0
+            fi
+          }
+
+          # Await completion of the instance refresh process
+          while check_instance_refresh_status; do
+              sleep 30 
+              echo "Awaiting auto scaling group update process"
+          done
+
+          condition1=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name ${{ secrets.AUTOSCALING_GROUP }} --query 'InstanceRefreshes[0].Status' --output text)
+          echo $condition1
+          if [ "$condition1" == "Failed" ] || [ "$condition1" == "Cancelled" ]; then
+              echo "Instance refresh unsuccessful"
+              exit 1
+            else
+              echo "Instance update successfully executed"
+              exit 0
+            fi

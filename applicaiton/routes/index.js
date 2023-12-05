@@ -3,13 +3,6 @@ import express from 'express';
 import * as assignmentController from '../assignmentApi/assignmentControllers.js'; 
 
 
-//called the app function
-// const route = (app) => {
-//     app.use('/v1', Router);
-// }
-//
-
-
 const setupRoutes = (app) => {
     app.use(express.json());
 

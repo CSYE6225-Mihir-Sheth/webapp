@@ -163,4 +163,8 @@ build {
       "MYSQL_DB=${var.MYSQL_DB}"
     ]
   }
+  post-processor "manifest" {
+    output     = "manifest.json"
+    strip_path = true
+  }
 }
