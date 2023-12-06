@@ -7,8 +7,9 @@ const setupRoutes = (app) => {
     app.use(express.json());
 
     app.all('/healthz', assignmentController.healthz);
+    app.use('/demo', Router);
 
-    app.use('/v1', Router);
+
 
     app.use((req, res) => {
         res.status(404).send('Not Found');
