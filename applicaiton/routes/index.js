@@ -8,7 +8,7 @@ const setupRoutes = (app) => {
 
     app.all('/healthz', assignmentController.healthz);
 
-    app.use('/v1', Router);
+    app.use('/demo', Router);
 
     app.use((req, res) => {
         res.status(404).send('Not Found');
