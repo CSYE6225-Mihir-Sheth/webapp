@@ -7,7 +7,7 @@ const setupRoutes = (app) => {
     app.use(express.json());
 
     app.all('/healthz', assignmentController.healthz);
-    app.use('/demo', Router);
+    app.use('/v3', Router);
 
 
 
